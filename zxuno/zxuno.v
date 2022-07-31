@@ -47,22 +47,6 @@ clock clock
 
 //------------------------------------------------------------------------------------------------
 
-wire [7:0] joy_0, joy_1;
-/*assign joyS=hs;
-
-joystick Joystick
-(
-   .clock (clk_sys),
-	.ce    (clk_sys),
-	.joy1  (joy_0),
-	.joy2  (joy_1),
-	.joyS  (),
-	.joyCk (joyCk),
-	.joyLd (joyLd),
-	.joyD  (joyD)
-	
-);
-*/
 //-------------------------------------------------------------------------------------------------
 
 wire SPI_SCK = sdcCk;
@@ -120,13 +104,10 @@ substitute_mcu #(.sysclk_frequency(240)) controller
 localparam CONF_STR = {
         "ORIC;;",
         "S0,DSK,Mount Drive A:;",
-        "O3,ROM,Oric Atmos,Oric 1;",
         "O6,FDD Controller,Off,On;",
         "O7,Drive Write,Allow,Prohibit;",
         "O45,Scandoubler Fx,None,CRT 25%,CRT 50%,CRT 75%;",
-        "O89,Stereo,Off,ABC (West Europe),ACB (East Europe);",
-        "T0,Reset;",
-        "V,v2.2-EDSK."
+        "T0,Reset"
 };
 
 wire        key_pressed;
@@ -137,37 +118,25 @@ wire        r, g, b;
 wire        hs, vs;
 
 wire  [1:0] buttons, switches;
-wire                    ypbpr;
+wire        ypbpr;
 wire        scandoublerD;
 wire [63:0] status;
 
-wire [9:0]  psg_out;
-wire [7:0]  psg_a;
-wire [7:0]  psg_b;
-wire [7:0]  psg_c;
+wire [14:0]  psg_out;
 
-wire [7:0]  joystick_0;
-wire [7:0]  joystick_1;
-
-wire        tapebits;
 wire        remote;
 reg         reset;
 
-wire        rom;
-reg         old_rom;
-
-wire        led_value;
 reg         fdd_ready;
 wire        fdd_busy;
 reg         fdd_layout;
 wire        fdd_reset ;
+wire        led_value;
 
 wire        disk_enable;
 reg         old_disk_enable;
 
 assign      disk_enable = status[6];
-assign      rom = ~status[3] ;
-wire [1:0]  stereo = status[9:8];
 
 
 wire [31:0] sd_lba;
@@ -187,13 +156,12 @@ wire        sd_dout_strobe;
 wire        sd_din_strobe;
 
 always @(posedge clk_sys) begin
-        old_rom <= rom;
         old_disk_enable <= disk_enable;
-        reset <= (!pll_locked | status[0] | buttons[0] | old_rom != rom |old_disk_enable != disk_enable);
+        reset <= (!pll_locked | status[0] |old_disk_enable != disk_enable);
 end
 
 
-user_io #(.STRLEN (1824>>3),.SD_IMAGES(1)) user_io
+user_io #(.STRLEN (1112>>3),.SD_IMAGES(1)) user_io
 (
         .clk_sys                (clk_sys       ),
         .clk_sd                 (clk_sys       ),
@@ -210,8 +178,8 @@ user_io #(.STRLEN (1824>>3),.SD_IMAGES(1)) user_io
         .key_pressed            (key_pressed   ),
         .key_extended           (key_extended  ),
         .key_code               (key_code      ),
-        .joystick_0             ( joystick_0   ),
-        .joystick_1             ( joystick_1   ),
+        .joystick_0             (              ),
+        .joystick_1             (              ),
         .status                 (status        ),
         // SD CARD
         .sd_lba                 (sd_lba        ),
@@ -235,41 +203,13 @@ user_io #(.STRLEN (1824>>3),.SD_IMAGES(1)) user_io
 wire keyb_reset;// = (ctrl&alt&del);
 
 
-wire hard_reset; // = status[1] |(ctrl&alt&bs);
-
-multiboot #(.ADDR(24'h058000)) Multiboot
-(
-	.clock(clk_sys),
-	.boot(hard_reset)
-);
-
-
-
-reg [15:0] psg_l;
-reg [15:0] psg_r;
-
-always @ (psg_a,psg_b,psg_c,psg_out,stereo) begin
-                case (stereo)
-                        2'b01  : {psg_l,psg_r} <= {{{2'b0,psg_a} + {2'b0,psg_b}},6'b0,{{2'b0,psg_c} + {2'b0,psg_b}},6'b0};
-                        2'b10  : {psg_l,psg_r} <= {{{2'b0,psg_a} + {2'b0,psg_c}},6'b0,{{2'b0,psg_c} + {2'b0,psg_b}},6'b0};
-                        default: {psg_l,psg_r} <= {psg_out,6'b0,psg_out,6'b0};
-
-                endcase
-end
-
-dac #(16) dac_l (
+dac #(14) dac_l (
    .clk_i        (clk_sys),
    .res_n_i      (1'b1   ),
-   .dac_i        (psg_l),
+   .dac_i        (psg_out),
    .dac_o        (AUDIO_L)
 );
-
-dac #(16) dac_r (
-   .clk_i        (clk_sys),
-   .res_n_i      (1'b1   ),
-   .dac_i        (psg_r  ),
-   .dac_o        (AUDIO_R)
-);
+assign AUDIO_R=AUDIO_L;
 
 /////////////////  Memory  ////////////////////////
 
@@ -300,14 +240,34 @@ mist_video #(.COLOR_DEPTH(1)) mist_video(
         .VGA_VS       (VGA_VS     ),
         .VGA_HS       (VGA_HS     ),
         .ce_divider   (1'b0       ),
-        .scandoubler_disable(scandoublerD       ),
-        .scanlines    (scandoublerD ? 2'b00 : status[5:4]),
-        .ypbpr        (ypbpr       )
+        .scandoubler_disable(scandoublerD       ),   
+        .scanlines    (scandoublerD? 2'b00 : status[5:4]),
+        .ypbpr        (      )
         );
 
+
+/*osd #(.OSD_X_OFFSET(10), .OSD_Y_OFFSET(10), .OSD_COLOR(4), .OSD_AUTO_CE(1)) osd
+(
+        .clk_sys(clk_sys),
+        //.ce     (ne14M  ),
+        .SPI_SCK(SPI_SCK ),
+        .SPI_DI (SPI_DI  ),
+        .SPI_SS3(SPI_SS3 ),
+        .rotate (2'd0   ),
+        .VSync  (vs     ),
+        .HSync  (hs     ),
+        .R_in   ({r,r,r,r,r,r}),
+        .G_in   ({g,g,g,g,g,g}      ),
+        .B_in   ({b,b,b,b,b,b}      ),
+        .R_out  (TMP_R  ),
+        .G_out  (TMP_G  ),
+        .B_out  (TMP_B  )
+);*/
 assign VGA_R=TMP_R[5:3];
 assign VGA_G=TMP_G[5:3];
 assign VGA_B=TMP_B[5:3];
+/*assign VGA_HS=~(hs ^ vs);
+assign VGA_VS=1'b1;*/
 //-------------------------------------------------------------------------------------------------
 wire [15:0] ram_ad;
 wire  [7:0] ram_d;
@@ -315,7 +275,6 @@ wire  [7:0] ram_q;
 wire        ram_cs_oric, ram_oe_oric, ram_we;
 wire        ram_oe = ram_oe_oric;
 wire        ram_cs = ram_cs_oric ;
-wire        phi2;
 
 oricatmos oricatmos(
         .clk_in           (clk_sys       ),
@@ -325,16 +284,16 @@ oricatmos oricatmos(
         .key_extended     (key_extended ),
         .key_strobe       (key_strobe   ),
         .PSG_OUT          (psg_out      ),
-        .PSG_OUT_A        (psg_a        ),
-        .PSG_OUT_B        (psg_b        ),
-        .PSG_OUT_C        (psg_c        ),
+        .PSG_OUT_A        (             ),
+        .PSG_OUT_B        (             ),
+        .PSG_OUT_C        (             ),
         .VIDEO_R          (r            ),
         .VIDEO_G          (g            ),
         .VIDEO_B          (b            ),
         .VIDEO_HSYNC      (hs           ),
         .VIDEO_VSYNC      (vs           ),
         .K7_TAPEIN        (tape         ),
-        .K7_TAPEOUT       (      ),
+        .K7_TAPEOUT       (             ),
         .K7_REMOTE        (remote       ),
         .ram_ad           (ram_ad       ),
         .ram_d            (ram_d        ),
@@ -342,17 +301,17 @@ oricatmos oricatmos(
         .ram_cs           (ram_cs_oric  ),
         .ram_oe           (ram_oe_oric  ),
         .ram_we           (ram_we       ),
-        .joystick_0       (joystick_0   ),
-        .joystick_1       (joystick_1   ),
+        .joystick_0       (             ),
+        .joystick_1       (             ),
         .fd_led           (led_value    ),
         .fdd_ready        (fdd_ready    ),
         .fdd_busy         (fdd_busy     ),
         .fdd_reset        (fdd_reset    ),
         .fdd_layout       (fdd_layout   ),
-        .phi2             (phi2         ),
+        .phi2             (             ),
         .pll_locked       (pll_locked   ),
         .disk_enable      (disk_enable  ),
-        .rom              (rom          ),
+        .rom              (1'b1         ),
         .img_mounted      ( img_mounted[0]), // signaling that new image has been mounted
         .img_size         ( img_size[19:0]), // size of image in bytes
         .img_wp           ( status[7]     ), // write protect
@@ -383,7 +342,10 @@ always @(posedge clk_sys) begin : mounted_blk
         end
 end
 
-assign  led = fdd_busy;
+
+///////////////// MISC /////////////////////////
+
+assign led = fdd_busy;
 assign VGA_NTSC=1'b0;
 assign VGA_PAL=1'b1;
 //-------------------------------------------------------------------------------------------------

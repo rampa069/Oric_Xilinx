@@ -521,13 +521,13 @@ begin
 	addr_latch: process
 	begin
 		wait until rising_edge(CLK_24);
-		if c(0) = '1' then
+		if c(23) = '1' then
 			-- Generate video phase 1 address
 			AD_RAM_INT <= VAP1;
-		elsif c(8) = '1' then
+		elsif c(7) = '1' then
 			-- Generate video phase 2 address
 			AD_RAM_INT <= VAP2;
-		elsif c(16) = '1' then
+		elsif c(15) = '1' then
 			-- Generate CPU phase 3 address
 			AD_RAM_INT <= lADDR; 
 		end if;

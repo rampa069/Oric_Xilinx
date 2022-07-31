@@ -53,10 +53,10 @@ entity oricatmos is
     K7_TAPEIN         : in    std_logic;
     K7_TAPEOUT        : out   std_logic;
     K7_REMOTE         : out   std_logic;
-    PSG_OUT_A         : OUT   std_logic_vector(7 downto 0);
-    PSG_OUT_B         : OUT   std_logic_vector(7 downto 0);
-    PSG_OUT_C         : OUT   std_logic_vector(7 downto 0);
-    PSG_OUT           : OUT   std_logic_vector(9 downto 0);
+    PSG_OUT_A         : OUT   unsigned(11 downto 0);
+    PSG_OUT_B         : OUT   unsigned(11 downto 0);
+    PSG_OUT_C         : OUT   unsigned(11 downto 0);
+    PSG_OUT           : OUT   unsigned(13 downto 0);
     VIDEO_R           : out   std_logic;
     VIDEO_G           : out   std_logic;
     VIDEO_B           : out   std_logic;
@@ -270,12 +270,12 @@ inst_rom0 : entity work.BASIC11A  -- Oric Atmos ROM
 		data 			=> ROM_ATMOS_DO
 );
 
-inst_rom1 : entity work.BASIC10  -- Oric 1 ROM
-	port map (
-		clk  			=> CLK_IN,
-		addr 			=> cpu_ad(13 downto 0),
-		data 			=> ROM_1_DO
-);
+--inst_rom1 : entity work.BASIC10  -- Oric 1 ROM
+--	port map (
+--		clk  			=> CLK_IN,
+--		addr 			=> cpu_ad(13 downto 0),
+--		data 			=> ROM_1_DO
+--);
 
 inst_rom2 : entity work.ORICDOS06  -- Microdisc ROM
 	port map (
@@ -352,27 +352,41 @@ inst_via : entity work.M6522
 		CLK         => CLK_IN
 );
 
-inst_psg : jt49_bus
-  PORT MAP(
-		 clk => CLK_IN,
-		 clk_en => ENA_1MHZ,
-		 sel => '1',
-		 rst_n => RESETn AND KEYB_RESETn,
-		 bc1 => via_ca2_out,
-		 bdir => via_cb2_out,
-		 din => via_pa_out,
-		 dout => psg_do,
-		 sample => open,
-		 sound => PSG_OUT,
-		 A => PSG_OUT_A,
-		 B => PSG_OUT_B,
-		 C => PSG_OUT_C,
-		 IOA_In => (OTHERS => '0'),
-		 IOA_Out => ym_ioa_out,
-		 IOB_In => (OTHERS => '0')
- );
+--inst_psg : jt49_bus
+--  PORT MAP(
+--		 clk => CLK_IN,
+--		 clk_en => ENA_1MHZ,
+--		 sel => '1',
+--		 rst_n => RESETn AND KEYB_RESETn,
+--		 bc1 => via_ca2_out,
+--		 bdir => via_cb2_out,
+--		 din => via_pa_out,
+--		 dout => psg_do,
+--		 sample => open,
+--		 sound => PSG_OUT,
+--		 A => PSG_OUT_A,
+--		 B => PSG_OUT_B,
+--		 C => PSG_OUT_C,
+--		 IOA_In => (OTHERS => '0'),
+--		 IOA_Out => ym_ioa_out,
+--		 IOB_In => (OTHERS => '0')
+-- );
 
-
+  psg_a: entity work.ym2149_audio
+  port map (
+    clk_i       => CLK_IN,
+    en_clk_psg_i=> ENA_1MHZ,
+    reset_n_i   => RESETn AND KEYB_RESETn,
+    bdir_i      => via_cb2_out,
+    bc_i        => via_ca2_out,
+    data_i      => via_pa_out,
+    data_r_o    => psg_do,
+    ch_a_o      => PSG_OUT_A,
+    ch_b_o      => PSG_OUT_B,
+    ch_c_o      => PSG_OUT_C,
+    mix_audio_o => PSG_OUT,
+    sel_n_i     => '1'
+    );
 
 
 inst_key : keyboard
@@ -383,7 +397,7 @@ inst_key : keyboard
 		key_strobe   => key_strobe,
 		key_code     => key_code,
 		row          => via_pb_out (2 downto 0),
-		col          => ym_ioa_out,
+		col          => via_pa_out, --ym_ioa_out,
 		key_hit      => KEY_HIT,
 		swnmi        => swnmi,
 		swrst        => swrst
@@ -440,7 +454,7 @@ inst_microdisc: entity work.Microdisc
 
 
 
-via_pa_in <= (via_pa_out and not via_pa_out_oe_l) or (psg_do and via_pa_out_oe_l);
+via_pa_in <= (via_pa_out and not via_pa_out_oe_l); -- or (psg_do and via_pa_out_oe_l);
 via_pb_in(2 downto 0) <= via_pb_out(2 downto 0);
 via_pb_in(3) <= KEY_HIT;
 via_pb_in(4) <=via_pb_out(4);

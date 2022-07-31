@@ -48,22 +48,7 @@ clock clock
 
 //------------------------------------------------------------------------------------------------
 
-wire [7:0] joy_0, joy_1;
-/*assign joyS=hs;
 
-joystick Joystick
-(
-   .clock (clk_sys),
-	.ce    (clk_sys),
-	.joy1  (joy_0),
-	.joy2  (joy_1),
-	.joyS  (),
-	.joyCk (joyCk),
-	.joyLd (joyLd),
-	.joyD  (joyD)
-	
-);
-*/
 //-------------------------------------------------------------------------------------------------
 
 wire SPI_SCK = sdcCk;
@@ -125,7 +110,7 @@ localparam CONF_STR = {
         "O6,FDD Controller,Off,On;",
         "O7,Drive Write,Allow,Prohibit;",
         "O45,Scandoubler Fx,None,CRT 25%,CRT 50%,CRT 75%;",
-        "O89,Stereo,Off,ABC (West Europe),ACB (East Europe);",
+//        "O89,Stereo,Off,ABC (West Europe),ACB (East Europe);",
         "T0,Reset;",
         "V,v2.2-EDSK."
 };
@@ -141,15 +126,11 @@ wire                    ypbpr;
 wire        scandoublerD;
 wire [63:0] status;
 
-wire [9:0]  psg_out;
-wire [7:0]  psg_a;
-wire [7:0]  psg_b;
-wire [7:0]  psg_c;
+wire [13:0]  psg_out;
 
 wire [7:0]  joystick_0;
 wire [7:0]  joystick_1;
 
-wire        tapebits;
 wire        remote;
 reg         reset;
 
@@ -167,7 +148,6 @@ reg         old_disk_enable;
 
 assign      disk_enable = status[6];
 assign      rom = ~status[3] ;
-wire [1:0]  stereo = status[9:8];
 
 
 wire [31:0] sd_lba;
@@ -193,7 +173,7 @@ always @(posedge clk_sys) begin
 end
 
 
-user_io #(.STRLEN (1824>>3)) user_io
+user_io #(.STRLEN (1416>>3)) user_io
 (
         .clk_sys                (clk_sys                ),
         .clk_sd                 (clk_sys                ),
@@ -245,31 +225,15 @@ multiboot #(.ADDR(24'hB0000)) Multiboot
 
 
 
-reg [15:0] psg_l;
-reg [15:0] psg_r;
-
-always @ (psg_a,psg_b,psg_c,psg_out,stereo) begin
-                case (stereo)
-                        2'b01  : {psg_l,psg_r} <= {{{2'b0,psg_a} + {2'b0,psg_b}},6'b0,{{2'b0,psg_c} + {2'b0,psg_b}},6'b0};
-                        2'b10  : {psg_l,psg_r} <= {{{2'b0,psg_a} + {2'b0,psg_c}},6'b0,{{2'b0,psg_c} + {2'b0,psg_b}},6'b0};
-                        default: {psg_l,psg_r} <= {psg_out,6'b0,psg_out,6'b0};
-
-                endcase
-end
-
-dac #(16) dac_l (
+dac #(14) dac_l (
    .clk_i        (clk_sys),
    .res_n_i      (1'b1   ),
-   .dac_i        (psg_l  ),
+   .dac_i        (psg_out  ),
    .dac_o        (AUDIO_L)
 );
 
-dac #(16) dac_r (
-   .clk_i        (clk_sys),
-   .res_n_i      (1'b1   ),
-   .dac_i        (psg_r  ),
-   .dac_o        (AUDIO_R)
-);
+assign AUDIO_R=AUDIO_L;
+
 /////////////////  Memory  ////////////////////////
 
 assign sramUb = 1'b0;
@@ -326,9 +290,9 @@ oricatmos oricatmos(
         .key_extended     (key_extended ),
         .key_strobe       (key_strobe   ),
         .PSG_OUT          (psg_out      ),
-        .PSG_OUT_A        (psg_a        ),
-        .PSG_OUT_B        (psg_b        ),
-        .PSG_OUT_C        (psg_c        ),
+        .PSG_OUT_A        (             ),
+        .PSG_OUT_B        (             ),
+        .PSG_OUT_C        (             ),
         .VIDEO_R          (r            ),
         .VIDEO_G          (g            ),
         .VIDEO_B          (b            ),

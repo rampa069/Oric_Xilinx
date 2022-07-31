@@ -747,109 +747,107 @@ wire[10:0] edsk_next = ((edsk_addr + 1'd1) >= edsk_size) ? 11'd0 : edsk_addr + 1
 reg  [7:0] spt_size = 0;
 reg  [7:0] spt_addr;
 
-//generate
-//	if(EDSK) begin
-		wire [7:0] scan_data =  buff_dout;
-		reg [53:0] edsk[0:1991];
-		reg  [7:0] spt[0:165];
 
-		//reg  [7:0] spt_addr;
-		always @(posedge clk_sys) begin
-			{edsk_track,edsk_side,edsk_trackf,edsk_sidef,edsk_sector,edsk_sizecode,edsk_offset} <= edsk[edsk_addr];
-			edsk_spt <= spt[spt_addr];
-		end
+wire [7:0] scan_data =  buff_dout;
+reg [53:0] edsk[0:1991];  //[53:0][0:1991]
+reg  [7:0] spt[0:165]; // 7:0 [0:165]
 
-		reg  [7:0] tpos;
-		reg  [7:0] tsize;
-		reg  [7:0] tsizes[0:165];
-		always @(posedge clk_sys) tsize <= tsizes[tpos];
+//reg  [7:0] spt_addr;
+always @(posedge clk_sys) begin
+	{edsk_track,edsk_side,edsk_trackf,edsk_sidef,edsk_sector,edsk_sizecode,edsk_offset} <= edsk[edsk_addr];
+	edsk_spt <= spt[spt_addr];
+end
 
-		wire[127:0] edsk_sig = "EXTENDED CPC DSK";
-		wire[127:0] sig_pos  = edsk_sig >> (8'd120-(scan_addr[7:0]<<3));
+reg  [7:0] tpos;
+reg  [7:0] tsize;
+reg  [7:0] tsizes[0:165];
+always @(posedge clk_sys) tsize <= tsizes[tpos];
 
-		always @(posedge clk_sys) begin : blk3
-			reg old_active, old_wr;
-			reg [13:0] hdr_pos, bcnt;
-			reg  [7:0] idStatus;
-			reg  [6:0] track;
-			reg        side;
-			reg  [7:0] sector;
-			reg  [1:0] sizecode;
-			reg  [7:0] crc1;
-			reg  [7:0] crc2;
-			reg  [7:0] sectors;
-			reg [15:0] track_size, track_pos;
-			reg [19:0] offset, offset1;
-			reg  [7:0] size_lo;
-			reg [10:0] secpos;
-			reg  [7:0] trackf, sidef;
+wire[127:0] edsk_sig = "EXTENDED CPC DSK";
+wire[127:0] sig_pos  = edsk_sig >> (8'd120-(scan_addr[7:0]<<3));
 
-			old_active <= scan_active;
-			if(scan_active & ~old_active) begin
-				edsk_size <=0;
-				spt_size  <=0;
-				track_pos <=0;
-				var_size  <=1;
-			end
+always @(posedge clk_sys) begin : blk3
+	reg old_active, old_wr;
+	reg [13:0] hdr_pos, bcnt;
+	reg  [7:0] idStatus;
+	reg  [6:0] track;
+	reg        side;
+	reg  [7:0] sector;
+	reg  [1:0] sizecode;
+	reg  [7:0] crc1;
+	reg  [7:0] crc2;
+	reg  [7:0] sectors;
+	reg [15:0] track_size, track_pos;
+	reg [19:0] offset, offset1;
+	reg  [7:0] size_lo;
+	reg [10:0] secpos;
+	reg  [7:0] trackf, sidef;
 
-			old_wr <= scan_wr;
-			if(scan_wr & ~old_wr & scan_active) begin
-				if((scan_addr[19:0] < 16) & (sig_pos[7:0] != scan_data)) var_size <= 0;
-				if(var_size) begin
-					if( scan_addr == 48) spt_size <= scan_data; else
-					if((scan_addr == 49) & (scan_data == 2)) spt_size <= spt_size << 1; else
-					if( scan_addr == 52) begin
-						track_size <= {scan_data, 8'd0};
-						track_pos  <= 0;
-						tpos <= 1;
-					end else
-					if((scan_addr  > 52) & (scan_addr < 218)) begin
-						tsizes[scan_addr - 52] <= scan_data;
-						spt[scan_addr - 52] <= 0;
-					end else
-					if((scan_addr >= 256) && track_size) begin
-						track_pos <= track_pos + 1'd1;
-						case(track_pos)
-							00: offset  <= scan_addr + 9'd256;
-							16: track   <= scan_data[6:0];
-							17: side    <= scan_data[0];
-							21: sectors <= scan_data;
-							22: spt[(side ? (spt_size >> 1) : 8'd0) + track] <= sectors;
-							default:
-								if((track_pos >= 24) && sectors) begin
-									case(track_pos[2:0])
-										0: begin
-												trackf  <= scan_data;
-												secpos  <= edsk_size;
-												offset1 <= offset;
-											end
-										1: sidef   <= scan_data;
-										2: sector  <= scan_data;
-										3: sizecode<= scan_data[1:0];
-										6: size_lo <= scan_data;
-										7: begin
-												if({scan_data, size_lo}) begin
-													edsk[secpos] <= {track,side,trackf,sidef,sector,sizecode,offset1};
-													edsk_size <= edsk_size + 1'd1;
-													offset <= offset + {scan_data, size_lo};
-												end
-												sectors <= sectors - 1'd1;
-											end
-										default:;
-									endcase
-								end
-						endcase
-						if(track_pos >= (track_size - 1'd1)) begin
-							track_size <= {tsize, 8'd0};
-							track_pos  <= 0;
-							tpos <= tpos + 1'd1;
+	old_active <= scan_active;
+	if(scan_active & ~old_active) begin
+		edsk_size <=0;
+		spt_size  <=0;
+		track_pos <=0;
+		var_size  <=1;
+	end
+
+	old_wr <= scan_wr;
+	if(scan_wr & ~old_wr & scan_active) begin
+		if((scan_addr[19:0] < 16) & (sig_pos[7:0] != scan_data)) var_size <= 0;
+		if(var_size) begin
+			if( scan_addr == 48) spt_size <= scan_data; else
+			if((scan_addr == 49) & (scan_data == 2)) spt_size <= spt_size << 1; else
+			if( scan_addr == 52) begin
+				track_size <= {scan_data, 8'd0};
+				track_pos  <= 0;
+				tpos <= 1;
+			end else
+			if((scan_addr  > 52) & (scan_addr < 218)) begin
+				tsizes[scan_addr - 52] <= scan_data;
+				spt[scan_addr - 52] <= 0;
+			end else
+			if((scan_addr >= 256) && track_size) begin
+				track_pos <= track_pos + 1'd1;
+				case(track_pos)
+					00: offset  <= scan_addr + 9'd256;
+					16: track   <= scan_data[6:0];
+					17: side    <= scan_data[0];
+					21: sectors <= scan_data;
+					22: spt[(side ? (spt_size >> 1) : 8'd0) + track] <= sectors;
+					default:
+						if((track_pos >= 24) && sectors) begin
+							case(track_pos[2:0])
+								0: begin
+										trackf  <= scan_data;
+										secpos  <= edsk_size;
+										offset1 <= offset;
+									end
+								1: sidef   <= scan_data;
+								2: sector  <= scan_data;
+								3: sizecode<= scan_data[1:0];
+								6: size_lo <= scan_data;
+								7: begin
+										if({scan_data, size_lo}) begin
+											edsk[secpos] <= {track,side,trackf,sidef,sector,sizecode,offset1};
+											edsk_size <= edsk_size + 1'd1;
+											offset <= offset + {scan_data, size_lo};
+										end
+										sectors <= sectors - 1'd1;
+									end
+								default:;
+							endcase
 						end
-					end
+				endcase
+				if(track_pos >= (track_size - 1'd1)) begin
+					track_size <= {tsize, 8'd0};
+					track_pos  <= 0;
+					tpos <= tpos + 1'd1;
 				end
 			end
 		end
-//	end
-//endgenerate
+	end
+end
+
 
 endmodule
 

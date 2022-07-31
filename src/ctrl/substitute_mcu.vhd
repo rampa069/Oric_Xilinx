@@ -257,53 +257,53 @@ begin
 end process;
 
 
--- UART
-
-genjtaguart:
-if jtag_uart=true generate
-
-myuart : entity work.jtag_uart
-	generic map(
-		enable_tx=>true,
-		enable_rx=>true
-	)
-	port map(
-		clk => clk,
-		reset => reset_n, -- active low
-		txdata => ser_txdata,
-		txready => ser_txready,
-		txgo => ser_txgo,
-		rxdata => ser_rxdata,
-		rxint => ser_rxint,
-		txint => open,
-		clock_divisor => to_unsigned(uart_divisor,16), -- 42MHz / 115,200 bps
-		rxd => rxd,
-		txd => txd
-	);
-end generate;
-
-genuart:
-if jtag_uart=false generate
-
-myuart : entity work.simple_uart
-	generic map(
-		enable_tx=>true,
-		enable_rx=>true
-	)
-	port map(
-		clk => clk,
-		reset => reset_n, -- active low
-		txdata => ser_txdata,
-		txready => ser_txready,
-		txgo => ser_txgo,
-		rxdata => ser_rxdata,
-		rxint => ser_rxint,
-		txint => open,
-		clock_divisor => to_unsigned(uart_divisor,16), -- 42MHz / 115,200 bps
-		rxd => rxd,
-		txd => txd
-	);
-end generate;
+---- UART
+--
+--genjtaguart:
+--if jtag_uart=true generate
+--
+--myuart : entity work.jtag_uart
+--	generic map(
+--		enable_tx=>true,
+--		enable_rx=>true
+--	)
+--	port map(
+--		clk => clk,
+--		reset => reset_n, -- active low
+--		txdata => ser_txdata,
+--		txready => ser_txready,
+--		txgo => ser_txgo,
+--		rxdata => ser_rxdata,
+--		rxint => ser_rxint,
+--		txint => open,
+--		clock_divisor => to_unsigned(uart_divisor,16), -- 42MHz / 115,200 bps
+--		rxd => rxd,
+--		txd => txd
+--	);
+--end generate;
+--
+--genuart:
+--if jtag_uart=false generate
+--
+--myuart : entity work.simple_uart
+--	generic map(
+--		enable_tx=>true,
+--		enable_rx=>true
+--	)
+--	port map(
+--		clk => clk,
+--		reset => reset_n, -- active low
+--		txdata => ser_txdata,
+--		txready => ser_txready,
+--		txgo => ser_txgo,
+--		rxdata => ser_rxdata,
+--		rxint => ser_rxint,
+--		txint => open,
+--		clock_divisor => to_unsigned(uart_divisor,16), -- 42MHz / 115,200 bps
+--		rxd => rxd,
+--		txd => txd
+--	);
+--end generate;
 
 
 -- PS2 devices
@@ -331,27 +331,27 @@ end generate;
 		);
 
 
-	mymouse : entity work.io_ps2_com
-		generic map (
-			clockFilter => 15,
-			ticksPerUsec => sysclk_frequency/10
-		)
-		port map (
-			clk => clk,
-			reset => not reset_n, -- active high!
-			ps2_clk_in => ps2m_clk_in,
-			ps2_dat_in => ps2m_dat_in,
-			ps2_clk_out => ps2m_clk_out,
-			ps2_dat_out => ps2m_dat_out,
-			
-			inIdle => open,	-- Probably don't need this
-			sendTrigger => mousesendtrigger,
-			sendByte => mousesendbyte,
-			sendBusy => mousesendbusy,
-			sendDone => mousesenddone,
-			recvTrigger => mouserecv,
-			recvByte => mouserecvbyte
-		);
+--	mymouse : entity work.io_ps2_com
+--		generic map (
+--			clockFilter => 15,
+--			ticksPerUsec => sysclk_frequency/10
+--		)
+--		port map (
+--			clk => clk,
+--			reset => not reset_n, -- active high!
+--			ps2_clk_in => ps2m_clk_in,
+--			ps2_dat_in => ps2m_dat_in,
+--			ps2_clk_out => ps2m_clk_out,
+--			ps2_dat_out => ps2m_dat_out,
+--			
+--			inIdle => open,	-- Probably don't need this
+--			sendTrigger => mousesendtrigger,
+--			sendByte => mousesendbyte,
+--			sendBusy => mousesendbusy,
+--			sendDone => mousesenddone,
+--			recvTrigger => mouserecv,
+--			recvByte => mouserecvbyte
+--		);
 
 spi_req<=spi_req_out;
 
