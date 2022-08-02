@@ -88,7 +88,7 @@ osd #(OSD_X_OFFSET, OSD_Y_OFFSET, OSD_COLOR, OSD_AUTO_CE) osd
 (
 	.clk_sys ( clk_sys ),
 	.rotate  ( rotate  ),
-	.ce      ( pixel_ena ), //pixel_ena
+	.ce      ( pixel_ena), //pixel_ena
 	.SPI_DI  ( SPI_DI  ),
 	.SPI_SCK ( SPI_SCK ),
 	.SPI_SS3 ( SPI_SS3 ),

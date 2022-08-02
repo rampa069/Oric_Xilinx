@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <report-views version="2.0" >
  <header>
-  <DateModified>2022-07-30T10:58:26</DateModified>
+  <DateModified>2022-08-02T08:37:24</DateModified>
   <ModuleName>zxd</ModuleName>
-  <SummaryTimeStamp>2022-07-30T10:58:18</SummaryTimeStamp>
+  <SummaryTimeStamp>2022-07-31T19:04:50</SummaryTimeStamp>
   <SavedFilePath>/home/rampa/Devel/Oric/zxd/iseconfig/zxd.xreport</SavedFilePath>
   <ImplementationReportsDirectory>/home/rampa/Devel/Oric/zxd/tmp/</ImplementationReportsDirectory>
   <DateInitialized>2022-07-06T10:23:14</DateInitialized>

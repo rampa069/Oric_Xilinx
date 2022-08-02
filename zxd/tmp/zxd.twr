@@ -1,0 +1,571 @@
+--------------------------------------------------------------------------------
+Release 14.7 Trace  (lin64)
+Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.
+
+/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64/unwrapped/trce -intstyle ise -v 3 -s 2 -n
+3 -fastpaths -xml zxd.twx zxd.ncd -o zxd.twr zxd.pcf
+
+Design file:              zxd.ncd
+Physical constraint file: zxd.pcf
+Device,package,speed:     xc6slx25,ftg256,C,-2 (PRODUCTION 1.23 2013-10-13)
+Report level:             verbose report
+
+Environment Variable      Effect 
+--------------------      ------ 
+NONE                      No environment variables were set
+--------------------------------------------------------------------------------
+
+INFO:Timing:3412 - To improve timing, see the Timing Closure User Guide (UG612).
+INFO:Timing:2752 - To get complete path coverage, use the unconstrained paths 
+   option. All paths that are not constrained will be reported in the 
+   unconstrained paths section(s) of the report.
+INFO:Timing:3339 - The clock-to-out numbers in this timing report are based on 
+   a 50 Ohm transmission line loading model.  For the details of this model, 
+   and for more information on accounting for different loading conditions, 
+   please see the device datasheet.
+
+================================================================================
+Timing constraint: TS_clock50 = PERIOD TIMEGRP "clock50" 20 ns HIGH 50%;
+For more information, see Period Analysis in the Timing Closure User Guide (UG612).
+
+ 0 paths analyzed, 0 endpoints analyzed, 0 failing endpoints
+ 0 timing errors detected. (0 component switching limit errors)
+ Minimum period is   8.000ns.
+--------------------------------------------------------------------------------
+
+Component Switching Limit Checks: TS_clock50 = PERIOD TIMEGRP "clock50" 20 ns HIGH 50%;
+--------------------------------------------------------------------------------
+Slack: 12.000ns (period - (min low pulse limit / (low pulse / period)))
+  Period: 20.000ns
+  Low pulse: 10.000ns
+  Low pulse limit: 4.000ns (Tdcmpw_CLKIN_50_100)
+  Physical resource: clock/dcm_sp_inst/CLKIN
+  Logical resource: clock/dcm_sp_inst/CLKIN
+  Location pin: DCM_X0Y2.CLKIN
+  Clock network: clock/dcm_sp_inst_ML_NEW_DIVCLK
+--------------------------------------------------------------------------------
+Slack: 12.000ns (period - (min high pulse limit / (high pulse / period)))
+  Period: 20.000ns
+  High pulse: 10.000ns
+  High pulse limit: 4.000ns (Tdcmpw_CLKIN_50_100)
+  Physical resource: clock/dcm_sp_inst/CLKIN
+  Logical resource: clock/dcm_sp_inst/CLKIN
+  Location pin: DCM_X0Y2.CLKIN
+  Clock network: clock/dcm_sp_inst_ML_NEW_DIVCLK
+--------------------------------------------------------------------------------
+Slack: 16.000ns (period - min period limit)
+  Period: 20.000ns
+  Min period limit: 4.000ns (250.000MHz) (Tdcmper_CLKIN)
+  Physical resource: clock/dcm_sp_inst/CLKIN
+  Logical resource: clock/dcm_sp_inst/CLKIN
+  Location pin: DCM_X0Y2.CLKIN
+  Clock network: clock/dcm_sp_inst_ML_NEW_DIVCLK
+--------------------------------------------------------------------------------
+
+================================================================================
+Timing constraint: TS_clock_clkfx = PERIOD TIMEGRP "clock_clkfx" TS_clock50 / 
+0.48 HIGH 50%;
+For more information, see Period Analysis in the Timing Closure User Guide (UG612).
+
+ 1582841 paths analyzed, 22983 endpoints analyzed, 0 failing endpoints
+ 1 timing error detected. (0 setup errors, 0 hold errors, 1 component switching limit error)
+ Minimum period is  50.000ns.
+--------------------------------------------------------------------------------
+
+Paths for end point oricatmos/inst_via/t2c_2 (SLICE_X11Y31.CE), 16 paths
+--------------------------------------------------------------------------------
+Slack (setup path):     16.544ns (requirement - (data path - clock path skew + uncertainty))
+  Source:               oricatmos/inst_via/t2_cnt_clk (FF)
+  Destination:          oricatmos/inst_via/t2c_2 (FF)
+  Requirement:          20.833ns
+  Data Path Delay:      3.732ns (Levels of Logic = 2)
+  Clock Path Skew:      -0.005ns (0.455 - 0.460)
+  Source Clock:         clk_sys falling at 20.833ns
+  Destination Clock:    clk_sys rising at 41.666ns
+  Clock Uncertainty:    0.552ns
+
+  Clock Uncertainty:          0.552ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter (TSJ):  0.070ns
+    Total Input Jitter (TIJ):   0.000ns
+    Discrete Jitter (DJ):       1.033ns
+    Phase Error (PE):           0.000ns
+
+  Maximum Data Path at Slow Process Corner: oricatmos/inst_via/t2_cnt_clk to oricatmos/inst_via/t2c_2
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X12Y29.AQ      Tcko                  0.476   oricatmos/inst_via/p2_h_dl
+                                                       oricatmos/inst_via/t2_cnt_clk
+    SLICE_X16Y30.B3      net (fanout=4)        0.867   oricatmos/inst_via/t2_cnt_clk
+    SLICE_X16Y30.B       Tilo                  0.235   oricatmos/inst_via/ca1_ip_reg_d
+                                                       oricatmos/inst_via/_n1029_inv_SW1
+    SLICE_X14Y34.C5      net (fanout=1)        0.668   N597
+    SLICE_X14Y34.C       Tilo                  0.255   oricatmos/inst_via/t2c<15>
+                                                       oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CE      net (fanout=5)        0.823   oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CLK     Tceck                 0.408   oricatmos/inst_via/t2c<3>
+                                                       oricatmos/inst_via/t2c_2
+    -------------------------------------------------  ---------------------------
+    Total                                      3.732ns (1.374ns logic, 2.358ns route)
+                                                       (36.8% logic, 63.2% route)
+
+--------------------------------------------------------------------------------
+Slack (setup path):     36.222ns (requirement - (data path - clock path skew + uncertainty))
+  Source:               oricatmos/inst_ula/c_5 (FF)
+  Destination:          oricatmos/inst_via/t2c_2 (FF)
+  Requirement:          41.666ns
+  Data Path Delay:      4.977ns (Levels of Logic = 2)
+  Clock Path Skew:      0.085ns (0.455 - 0.370)
+  Source Clock:         clk_sys rising at 0.000ns
+  Destination Clock:    clk_sys rising at 41.666ns
+  Clock Uncertainty:    0.552ns
+
+  Clock Uncertainty:          0.552ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter (TSJ):  0.070ns
+    Total Input Jitter (TIJ):   0.000ns
+    Discrete Jitter (DJ):       1.033ns
+    Phase Error (PE):           0.000ns
+
+  Maximum Data Path at Slow Process Corner: oricatmos/inst_ula/c_5 to oricatmos/inst_via/t2c_2
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X20Y28.BMUX    Tshcko                0.535   oricatmos/inst_ula/c<15>
+                                                       oricatmos/inst_ula/c_5
+    SLICE_X10Y30.C4      net (fanout=14)       1.584   oricatmos/inst_ula/c<5>
+    SLICE_X10Y30.C       Tilo                  0.255   oricatmos/inst_via/t2c_active
+                                                       oricatmos/inst_ula/CLK_4_EN<11>1
+    SLICE_X14Y34.C4      net (fanout=53)       1.117   oricatmos/ula_CLK_4_en
+    SLICE_X14Y34.C       Tilo                  0.255   oricatmos/inst_via/t2c<15>
+                                                       oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CE      net (fanout=5)        0.823   oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CLK     Tceck                 0.408   oricatmos/inst_via/t2c<3>
+                                                       oricatmos/inst_via/t2c_2
+    -------------------------------------------------  ---------------------------
+    Total                                      4.977ns (1.453ns logic, 3.524ns route)
+                                                       (29.2% logic, 70.8% route)
+
+--------------------------------------------------------------------------------
+Slack (setup path):     36.239ns (requirement - (data path - clock path skew + uncertainty))
+  Source:               oricatmos/inst_ula/c_11 (FF)
+  Destination:          oricatmos/inst_via/t2c_2 (FF)
+  Requirement:          41.666ns
+  Data Path Delay:      4.968ns (Levels of Logic = 2)
+  Clock Path Skew:      0.093ns (0.455 - 0.362)
+  Source Clock:         clk_sys rising at 0.000ns
+  Destination Clock:    clk_sys rising at 41.666ns
+  Clock Uncertainty:    0.552ns
+
+  Clock Uncertainty:          0.552ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter (TSJ):  0.070ns
+    Total Input Jitter (TIJ):   0.000ns
+    Discrete Jitter (DJ):       1.033ns
+    Phase Error (PE):           0.000ns
+
+  Maximum Data Path at Slow Process Corner: oricatmos/inst_ula/c_11 to oricatmos/inst_via/t2c_2
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X23Y29.DQ      Tcko                  0.430   oricatmos/inst_ula/c<11>
+                                                       oricatmos/inst_ula/c_11
+    SLICE_X10Y30.C1      net (fanout=12)       1.680   oricatmos/inst_ula/c<11>
+    SLICE_X10Y30.C       Tilo                  0.255   oricatmos/inst_via/t2c_active
+                                                       oricatmos/inst_ula/CLK_4_EN<11>1
+    SLICE_X14Y34.C4      net (fanout=53)       1.117   oricatmos/ula_CLK_4_en
+    SLICE_X14Y34.C       Tilo                  0.255   oricatmos/inst_via/t2c<15>
+                                                       oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CE      net (fanout=5)        0.823   oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CLK     Tceck                 0.408   oricatmos/inst_via/t2c<3>
+                                                       oricatmos/inst_via/t2c_2
+    -------------------------------------------------  ---------------------------
+    Total                                      4.968ns (1.348ns logic, 3.620ns route)
+                                                       (27.1% logic, 72.9% route)
+
+--------------------------------------------------------------------------------
+
+Paths for end point oricatmos/inst_via/t2c_1 (SLICE_X11Y31.CE), 16 paths
+--------------------------------------------------------------------------------
+Slack (setup path):     16.562ns (requirement - (data path - clock path skew + uncertainty))
+  Source:               oricatmos/inst_via/t2_cnt_clk (FF)
+  Destination:          oricatmos/inst_via/t2c_1 (FF)
+  Requirement:          20.833ns
+  Data Path Delay:      3.714ns (Levels of Logic = 2)
+  Clock Path Skew:      -0.005ns (0.455 - 0.460)
+  Source Clock:         clk_sys falling at 20.833ns
+  Destination Clock:    clk_sys rising at 41.666ns
+  Clock Uncertainty:    0.552ns
+
+  Clock Uncertainty:          0.552ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter (TSJ):  0.070ns
+    Total Input Jitter (TIJ):   0.000ns
+    Discrete Jitter (DJ):       1.033ns
+    Phase Error (PE):           0.000ns
+
+  Maximum Data Path at Slow Process Corner: oricatmos/inst_via/t2_cnt_clk to oricatmos/inst_via/t2c_1
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X12Y29.AQ      Tcko                  0.476   oricatmos/inst_via/p2_h_dl
+                                                       oricatmos/inst_via/t2_cnt_clk
+    SLICE_X16Y30.B3      net (fanout=4)        0.867   oricatmos/inst_via/t2_cnt_clk
+    SLICE_X16Y30.B       Tilo                  0.235   oricatmos/inst_via/ca1_ip_reg_d
+                                                       oricatmos/inst_via/_n1029_inv_SW1
+    SLICE_X14Y34.C5      net (fanout=1)        0.668   N597
+    SLICE_X14Y34.C       Tilo                  0.255   oricatmos/inst_via/t2c<15>
+                                                       oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CE      net (fanout=5)        0.823   oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CLK     Tceck                 0.390   oricatmos/inst_via/t2c<3>
+                                                       oricatmos/inst_via/t2c_1
+    -------------------------------------------------  ---------------------------
+    Total                                      3.714ns (1.356ns logic, 2.358ns route)
+                                                       (36.5% logic, 63.5% route)
+
+--------------------------------------------------------------------------------
+Slack (setup path):     36.240ns (requirement - (data path - clock path skew + uncertainty))
+  Source:               oricatmos/inst_ula/c_5 (FF)
+  Destination:          oricatmos/inst_via/t2c_1 (FF)
+  Requirement:          41.666ns
+  Data Path Delay:      4.959ns (Levels of Logic = 2)
+  Clock Path Skew:      0.085ns (0.455 - 0.370)
+  Source Clock:         clk_sys rising at 0.000ns
+  Destination Clock:    clk_sys rising at 41.666ns
+  Clock Uncertainty:    0.552ns
+
+  Clock Uncertainty:          0.552ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter (TSJ):  0.070ns
+    Total Input Jitter (TIJ):   0.000ns
+    Discrete Jitter (DJ):       1.033ns
+    Phase Error (PE):           0.000ns
+
+  Maximum Data Path at Slow Process Corner: oricatmos/inst_ula/c_5 to oricatmos/inst_via/t2c_1
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X20Y28.BMUX    Tshcko                0.535   oricatmos/inst_ula/c<15>
+                                                       oricatmos/inst_ula/c_5
+    SLICE_X10Y30.C4      net (fanout=14)       1.584   oricatmos/inst_ula/c<5>
+    SLICE_X10Y30.C       Tilo                  0.255   oricatmos/inst_via/t2c_active
+                                                       oricatmos/inst_ula/CLK_4_EN<11>1
+    SLICE_X14Y34.C4      net (fanout=53)       1.117   oricatmos/ula_CLK_4_en
+    SLICE_X14Y34.C       Tilo                  0.255   oricatmos/inst_via/t2c<15>
+                                                       oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CE      net (fanout=5)        0.823   oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CLK     Tceck                 0.390   oricatmos/inst_via/t2c<3>
+                                                       oricatmos/inst_via/t2c_1
+    -------------------------------------------------  ---------------------------
+    Total                                      4.959ns (1.435ns logic, 3.524ns route)
+                                                       (28.9% logic, 71.1% route)
+
+--------------------------------------------------------------------------------
+Slack (setup path):     36.257ns (requirement - (data path - clock path skew + uncertainty))
+  Source:               oricatmos/inst_ula/c_11 (FF)
+  Destination:          oricatmos/inst_via/t2c_1 (FF)
+  Requirement:          41.666ns
+  Data Path Delay:      4.950ns (Levels of Logic = 2)
+  Clock Path Skew:      0.093ns (0.455 - 0.362)
+  Source Clock:         clk_sys rising at 0.000ns
+  Destination Clock:    clk_sys rising at 41.666ns
+  Clock Uncertainty:    0.552ns
+
+  Clock Uncertainty:          0.552ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter (TSJ):  0.070ns
+    Total Input Jitter (TIJ):   0.000ns
+    Discrete Jitter (DJ):       1.033ns
+    Phase Error (PE):           0.000ns
+
+  Maximum Data Path at Slow Process Corner: oricatmos/inst_ula/c_11 to oricatmos/inst_via/t2c_1
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X23Y29.DQ      Tcko                  0.430   oricatmos/inst_ula/c<11>
+                                                       oricatmos/inst_ula/c_11
+    SLICE_X10Y30.C1      net (fanout=12)       1.680   oricatmos/inst_ula/c<11>
+    SLICE_X10Y30.C       Tilo                  0.255   oricatmos/inst_via/t2c_active
+                                                       oricatmos/inst_ula/CLK_4_EN<11>1
+    SLICE_X14Y34.C4      net (fanout=53)       1.117   oricatmos/ula_CLK_4_en
+    SLICE_X14Y34.C       Tilo                  0.255   oricatmos/inst_via/t2c<15>
+                                                       oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CE      net (fanout=5)        0.823   oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CLK     Tceck                 0.390   oricatmos/inst_via/t2c<3>
+                                                       oricatmos/inst_via/t2c_1
+    -------------------------------------------------  ---------------------------
+    Total                                      4.950ns (1.330ns logic, 3.620ns route)
+                                                       (26.9% logic, 73.1% route)
+
+--------------------------------------------------------------------------------
+
+Paths for end point oricatmos/inst_via/t2c_3 (SLICE_X11Y31.CE), 16 paths
+--------------------------------------------------------------------------------
+Slack (setup path):     16.570ns (requirement - (data path - clock path skew + uncertainty))
+  Source:               oricatmos/inst_via/t2_cnt_clk (FF)
+  Destination:          oricatmos/inst_via/t2c_3 (FF)
+  Requirement:          20.833ns
+  Data Path Delay:      3.706ns (Levels of Logic = 2)
+  Clock Path Skew:      -0.005ns (0.455 - 0.460)
+  Source Clock:         clk_sys falling at 20.833ns
+  Destination Clock:    clk_sys rising at 41.666ns
+  Clock Uncertainty:    0.552ns
+
+  Clock Uncertainty:          0.552ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter (TSJ):  0.070ns
+    Total Input Jitter (TIJ):   0.000ns
+    Discrete Jitter (DJ):       1.033ns
+    Phase Error (PE):           0.000ns
+
+  Maximum Data Path at Slow Process Corner: oricatmos/inst_via/t2_cnt_clk to oricatmos/inst_via/t2c_3
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X12Y29.AQ      Tcko                  0.476   oricatmos/inst_via/p2_h_dl
+                                                       oricatmos/inst_via/t2_cnt_clk
+    SLICE_X16Y30.B3      net (fanout=4)        0.867   oricatmos/inst_via/t2_cnt_clk
+    SLICE_X16Y30.B       Tilo                  0.235   oricatmos/inst_via/ca1_ip_reg_d
+                                                       oricatmos/inst_via/_n1029_inv_SW1
+    SLICE_X14Y34.C5      net (fanout=1)        0.668   N597
+    SLICE_X14Y34.C       Tilo                  0.255   oricatmos/inst_via/t2c<15>
+                                                       oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CE      net (fanout=5)        0.823   oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CLK     Tceck                 0.382   oricatmos/inst_via/t2c<3>
+                                                       oricatmos/inst_via/t2c_3
+    -------------------------------------------------  ---------------------------
+    Total                                      3.706ns (1.348ns logic, 2.358ns route)
+                                                       (36.4% logic, 63.6% route)
+
+--------------------------------------------------------------------------------
+Slack (setup path):     36.248ns (requirement - (data path - clock path skew + uncertainty))
+  Source:               oricatmos/inst_ula/c_5 (FF)
+  Destination:          oricatmos/inst_via/t2c_3 (FF)
+  Requirement:          41.666ns
+  Data Path Delay:      4.951ns (Levels of Logic = 2)
+  Clock Path Skew:      0.085ns (0.455 - 0.370)
+  Source Clock:         clk_sys rising at 0.000ns
+  Destination Clock:    clk_sys rising at 41.666ns
+  Clock Uncertainty:    0.552ns
+
+  Clock Uncertainty:          0.552ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter (TSJ):  0.070ns
+    Total Input Jitter (TIJ):   0.000ns
+    Discrete Jitter (DJ):       1.033ns
+    Phase Error (PE):           0.000ns
+
+  Maximum Data Path at Slow Process Corner: oricatmos/inst_ula/c_5 to oricatmos/inst_via/t2c_3
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X20Y28.BMUX    Tshcko                0.535   oricatmos/inst_ula/c<15>
+                                                       oricatmos/inst_ula/c_5
+    SLICE_X10Y30.C4      net (fanout=14)       1.584   oricatmos/inst_ula/c<5>
+    SLICE_X10Y30.C       Tilo                  0.255   oricatmos/inst_via/t2c_active
+                                                       oricatmos/inst_ula/CLK_4_EN<11>1
+    SLICE_X14Y34.C4      net (fanout=53)       1.117   oricatmos/ula_CLK_4_en
+    SLICE_X14Y34.C       Tilo                  0.255   oricatmos/inst_via/t2c<15>
+                                                       oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CE      net (fanout=5)        0.823   oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CLK     Tceck                 0.382   oricatmos/inst_via/t2c<3>
+                                                       oricatmos/inst_via/t2c_3
+    -------------------------------------------------  ---------------------------
+    Total                                      4.951ns (1.427ns logic, 3.524ns route)
+                                                       (28.8% logic, 71.2% route)
+
+--------------------------------------------------------------------------------
+Slack (setup path):     36.265ns (requirement - (data path - clock path skew + uncertainty))
+  Source:               oricatmos/inst_ula/c_11 (FF)
+  Destination:          oricatmos/inst_via/t2c_3 (FF)
+  Requirement:          41.666ns
+  Data Path Delay:      4.942ns (Levels of Logic = 2)
+  Clock Path Skew:      0.093ns (0.455 - 0.362)
+  Source Clock:         clk_sys rising at 0.000ns
+  Destination Clock:    clk_sys rising at 41.666ns
+  Clock Uncertainty:    0.552ns
+
+  Clock Uncertainty:          0.552ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter (TSJ):  0.070ns
+    Total Input Jitter (TIJ):   0.000ns
+    Discrete Jitter (DJ):       1.033ns
+    Phase Error (PE):           0.000ns
+
+  Maximum Data Path at Slow Process Corner: oricatmos/inst_ula/c_11 to oricatmos/inst_via/t2c_3
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X23Y29.DQ      Tcko                  0.430   oricatmos/inst_ula/c<11>
+                                                       oricatmos/inst_ula/c_11
+    SLICE_X10Y30.C1      net (fanout=12)       1.680   oricatmos/inst_ula/c<11>
+    SLICE_X10Y30.C       Tilo                  0.255   oricatmos/inst_via/t2c_active
+                                                       oricatmos/inst_ula/CLK_4_EN<11>1
+    SLICE_X14Y34.C4      net (fanout=53)       1.117   oricatmos/ula_CLK_4_en
+    SLICE_X14Y34.C       Tilo                  0.255   oricatmos/inst_via/t2c<15>
+                                                       oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CE      net (fanout=5)        0.823   oricatmos/inst_via/_n1029_inv
+    SLICE_X11Y31.CLK     Tceck                 0.382   oricatmos/inst_via/t2c<3>
+                                                       oricatmos/inst_via/t2c_3
+    -------------------------------------------------  ---------------------------
+    Total                                      4.942ns (1.322ns logic, 3.620ns route)
+                                                       (26.8% logic, 73.2% route)
+
+--------------------------------------------------------------------------------
+
+Hold Paths: TS_clock_clkfx = PERIOD TIMEGRP "clock_clkfx" TS_clock50 / 0.48 HIGH 50%;
+--------------------------------------------------------------------------------
+
+Paths for end point oricatmos/inst_microdisc/fdc1/Mram_edsk2 (RAMB16_X2Y28.DIA7), 1 path
+--------------------------------------------------------------------------------
+Slack (hold path):      0.259ns (requirement - (clock path skew + uncertainty - data path))
+  Source:               oricatmos/inst_microdisc/fdc1/blk3.offset1_16 (FF)
+  Destination:          oricatmos/inst_microdisc/fdc1/Mram_edsk2 (RAM)
+  Requirement:          0.000ns
+  Data Path Delay:      0.270ns (Levels of Logic = 0)
+  Clock Path Skew:      0.011ns (0.165 - 0.154)
+  Source Clock:         clk_sys rising at 0.000ns
+  Destination Clock:    clk_sys rising at 0.000ns
+  Clock Uncertainty:    0.000ns
+
+  Minimum Data Path at Fast Process Corner: oricatmos/inst_microdisc/fdc1/blk3.offset1_16 to oricatmos/inst_microdisc/fdc1/Mram_edsk2
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X49Y56.AQ      Tcko                  0.198   oricatmos/inst_microdisc/fdc1/blk3.offset1<19>
+                                                       oricatmos/inst_microdisc/fdc1/blk3.offset1_16
+    RAMB16_X2Y28.DIA7    net (fanout=1)        0.125   oricatmos/inst_microdisc/fdc1/blk3.offset1<16>
+    RAMB16_X2Y28.CLKA    Trckd_DIA   (-Th)     0.053   oricatmos/inst_microdisc/fdc1/Mram_edsk2
+                                                       oricatmos/inst_microdisc/fdc1/Mram_edsk2
+    -------------------------------------------------  ---------------------------
+    Total                                      0.270ns (0.145ns logic, 0.125ns route)
+                                                       (53.7% logic, 46.3% route)
+
+--------------------------------------------------------------------------------
+
+Paths for end point oricatmos/inst_microdisc/fdc1/Mram_edsk3 (RAMB16_X2Y24.DIA4), 1 path
+--------------------------------------------------------------------------------
+Slack (hold path):      0.265ns (requirement - (clock path skew + uncertainty - data path))
+  Source:               oricatmos/inst_microdisc/fdc1/blk3.sector_0 (FF)
+  Destination:          oricatmos/inst_microdisc/fdc1/Mram_edsk3 (RAM)
+  Requirement:          0.000ns
+  Data Path Delay:      0.272ns (Levels of Logic = 0)
+  Clock Path Skew:      0.007ns (0.175 - 0.168)
+  Source Clock:         clk_sys rising at 0.000ns
+  Destination Clock:    clk_sys rising at 0.000ns
+  Clock Uncertainty:    0.000ns
+
+  Minimum Data Path at Fast Process Corner: oricatmos/inst_microdisc/fdc1/blk3.sector_0 to oricatmos/inst_microdisc/fdc1/Mram_edsk3
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X48Y48.AQ      Tcko                  0.200   oricatmos/inst_microdisc/fdc1/blk3.sector<3>
+                                                       oricatmos/inst_microdisc/fdc1/blk3.sector_0
+    RAMB16_X2Y24.DIA4    net (fanout=1)        0.125   oricatmos/inst_microdisc/fdc1/blk3.sector<0>
+    RAMB16_X2Y24.CLKA    Trckd_DIA   (-Th)     0.053   oricatmos/inst_microdisc/fdc1/Mram_edsk3
+                                                       oricatmos/inst_microdisc/fdc1/Mram_edsk3
+    -------------------------------------------------  ---------------------------
+    Total                                      0.272ns (0.147ns logic, 0.125ns route)
+                                                       (54.0% logic, 46.0% route)
+
+--------------------------------------------------------------------------------
+
+Paths for end point oricatmos/inst_microdisc/fdc1/Mram_edsk3 (RAMB16_X2Y24.DIA5), 1 path
+--------------------------------------------------------------------------------
+Slack (hold path):      0.265ns (requirement - (clock path skew + uncertainty - data path))
+  Source:               oricatmos/inst_microdisc/fdc1/blk3.sector_1 (FF)
+  Destination:          oricatmos/inst_microdisc/fdc1/Mram_edsk3 (RAM)
+  Requirement:          0.000ns
+  Data Path Delay:      0.272ns (Levels of Logic = 0)
+  Clock Path Skew:      0.007ns (0.175 - 0.168)
+  Source Clock:         clk_sys rising at 0.000ns
+  Destination Clock:    clk_sys rising at 0.000ns
+  Clock Uncertainty:    0.000ns
+
+  Minimum Data Path at Fast Process Corner: oricatmos/inst_microdisc/fdc1/blk3.sector_1 to oricatmos/inst_microdisc/fdc1/Mram_edsk3
+    Location             Delay type         Delay(ns)  Physical Resource
+                                                       Logical Resource(s)
+    -------------------------------------------------  -------------------
+    SLICE_X48Y48.BQ      Tcko                  0.200   oricatmos/inst_microdisc/fdc1/blk3.sector<3>
+                                                       oricatmos/inst_microdisc/fdc1/blk3.sector_1
+    RAMB16_X2Y24.DIA5    net (fanout=1)        0.125   oricatmos/inst_microdisc/fdc1/blk3.sector<1>
+    RAMB16_X2Y24.CLKA    Trckd_DIA   (-Th)     0.053   oricatmos/inst_microdisc/fdc1/Mram_edsk3
+                                                       oricatmos/inst_microdisc/fdc1/Mram_edsk3
+    -------------------------------------------------  ---------------------------
+    Total                                      0.272ns (0.147ns logic, 0.125ns route)
+                                                       (54.0% logic, 46.0% route)
+
+--------------------------------------------------------------------------------
+
+Component Switching Limit Checks: TS_clock_clkfx = PERIOD TIMEGRP "clock_clkfx" TS_clock50 / 0.48 HIGH 50%;
+--------------------------------------------------------------------------------
+Slack: -8.334ns (period - min period limit)
+  Period: 41.666ns
+  Min period limit: 50.000ns (20.000MHz) (Tcapper)
+  Physical resource: Multiboot/IcapSpartan6/CLK
+  Logical resource: Multiboot/IcapSpartan6/CLK
+  Location pin: ICAP_X0Y0.CLK
+  Clock network: clk_sys
+--------------------------------------------------------------------------------
+Slack: 38.096ns (period - min period limit)
+  Period: 41.666ns
+  Min period limit: 3.570ns (280.112MHz) (Trper_CLKB(Fmax))
+  Physical resource: mist_video/osd/Mram_osd_buffer/CLKB
+  Logical resource: mist_video/osd/Mram_osd_buffer/CLKB
+  Location pin: RAMB16_X1Y10.CLKB
+  Clock network: clk_sys
+--------------------------------------------------------------------------------
+Slack: 38.096ns (period - min period limit)
+  Period: 41.666ns
+  Min period limit: 3.570ns (280.112MHz) (Trper_CLKA(Fmax))
+  Physical resource: oricatmos_inst_rom1/Mram_rom_data1/CLKA
+  Logical resource: oricatmos_inst_rom1/Mram_rom_data1/CLKA
+  Location pin: RAMB16_X1Y20.CLKA
+  Clock network: clk_sys
+--------------------------------------------------------------------------------
+
+
+Derived Constraint Report
+Derived Constraints for TS_clock50
++-------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
+|                               |   Period    |       Actual Period       |      Timing Errors        |      Paths Analyzed       |
+|           Constraint          | Requirement |-------------+-------------|-------------+-------------|-------------+-------------|
+|                               |             |   Direct    | Derivative  |   Direct    | Derivative  |   Direct    | Derivative  |
++-------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
+|TS_clock50                     |     20.000ns|      8.000ns|     24.000ns|            0|            1|            0|      1582841|
+| TS_clock_clkfx                |     41.667ns|     50.000ns|          N/A|            1|            0|      1582841|            0|
++-------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
+
+1 constraint not met.
+
+
+Data Sheet report:
+-----------------
+All values displayed in nanoseconds (ns)
+
+Clock to Setup on destination clock clock50
+---------------+---------+---------+---------+---------+
+               | Src:Rise| Src:Fall| Src:Rise| Src:Fall|
+Source Clock   |Dest:Rise|Dest:Rise|Dest:Fall|Dest:Fall|
+---------------+---------+---------+---------+---------+
+clock50        |   20.901|    4.289|    3.195|    2.082|
+---------------+---------+---------+---------+---------+
+
+
+Timing summary:
+---------------
+
+Timing errors: 1  Score: 8334  (Setup/Max: 0, Hold: 0, Component Switching Limit: 8334)
+
+Constraints cover 1582841 paths, 0 nets, and 32803 connections
+
+Design statistics:
+   Minimum period:  50.000ns{1}   (Maximum frequency:  20.000MHz)
+
+
+------------------------------------Footnotes-----------------------------------
+1)  The minimum period statistic assumes all single cycle delays.
+
+Analysis completed Tue Aug  2 08:44:42 2022 
+--------------------------------------------------------------------------------
+
+Trace Settings:
+-------------------------
+Trace Settings 
+
+Peak Memory Usage: 538 MB
+
+
+

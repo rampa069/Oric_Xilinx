@@ -32,7 +32,6 @@ module zxd
 );
 
 `default_nettype none
-
 //-------------------------------------------------------------------------------------------------
 
 wire clk_sys,pll_locked;
@@ -46,6 +45,14 @@ clock clock
 
 
 //------------------------------------------------------------------------------------------------
+wire boot;
+
+
+multiboot Multiboot
+(
+	.clock  (clk_sys  ),
+	.reset  (boot)
+);
 
 //-------------------------------------------------------------------------------------------------
 
@@ -104,10 +111,13 @@ substitute_mcu #(.sysclk_frequency(240)) controller
 localparam CONF_STR = {
         "ORIC;;",
         "S0,DSK,Mount Drive A:;",
+//		  "O3,ROM,Oric Atmos,Oric 1;",
         "O6,FDD Controller,Off,On;",
         "O7,Drive Write,Allow,Prohibit;",
+		  "O2,Sound Ouput,Sound,Tape;",
         "O45,Scandoubler Fx,None,CRT 25%,CRT 50%,CRT 75%;",
-        "T0,Reset"
+        "T0,Reset ORIC;",
+		  "T1,Reset FPGA"
 };
 
 wire        key_pressed;
@@ -127,21 +137,27 @@ wire [14:0]  psg_out;
 wire        remote;
 reg         reset;
 
-reg         fdd_ready;
+wire        fdd_ready;
 wire        fdd_busy;
 reg         fdd_layout;
 wire        fdd_reset ;
 wire        led_value;
 
 wire        disk_enable;
+wire        rom;
+wire        img_wp;
 reg         old_disk_enable;
+wire        sound_select;
 
 assign      disk_enable = status[6];
-
+assign      rom = status[3];
+assign      boot=status[1];
+assign      img_wp=status[7];
+assign      sound_select=status[2];
 
 wire [31:0] sd_lba;
-wire  [1:0] sd_rd;
-wire  [1:0] sd_wr;
+wire        sd_rd;
+wire        sd_wr;
 wire        sd_ack;
 wire        sd_ack_conf;
 wire        sd_conf;
@@ -150,18 +166,15 @@ wire  [8:0] sd_buff_addr;
 wire  [7:0] sd_dout;
 wire  [7:0] sd_din;
 wire        sd_buff_wr;
-wire  [1:0] img_mounted;
+wire        img_mounted;
 wire [63:0] img_size;
 wire        sd_dout_strobe;
 wire        sd_din_strobe;
 
-always @(posedge clk_sys) begin
-        old_disk_enable <= disk_enable;
-        reset <= (!pll_locked | status[0] |old_disk_enable != disk_enable);
-end
+reg         old_rom; 
 
 
-user_io #(.STRLEN (1112>>3),.SD_IMAGES(1)) user_io
+user_io #(.STRLEN (1472>>3),.SD_IMAGES(1)) user_io
 (
         .clk_sys                (clk_sys       ),
         .clk_sd                 (clk_sys       ),
@@ -202,14 +215,11 @@ user_io #(.STRLEN (1112>>3),.SD_IMAGES(1)) user_io
 
 wire keyb_reset;// = (ctrl&alt&del);
 
-
-dac #(14) dac_l (
-   .clk_i        (clk_sys),
-   .res_n_i      (1'b1   ),
-   .dac_i        (psg_out),
-   .dac_o        (AUDIO_L)
-);
-assign AUDIO_R=AUDIO_L;
+always @(posedge clk_sys) begin
+        old_rom <= rom;
+        old_disk_enable <= disk_enable;
+        reset <= (!pll_locked | status[0] | old_rom != rom |old_disk_enable != disk_enable);
+end
 
 /////////////////  Memory  ////////////////////////
 
@@ -224,16 +234,17 @@ assign ram_q = sramDQ;
 //-------------------------------------------------------------------------------------------------
 wire [5:0] TMP_R,TMP_G,TMP_B;
 
-mist_video #(.COLOR_DEPTH(1)) mist_video(
-        .clk_sys      (clk_sys     ),
+mist_video #(.COLOR_DEPTH(1),.OSD_AUTO_CE(1)) mist_video
+(
+        .clk_sys      (clk_sys    ),
         .SPI_SCK      (SPI_SCK    ),
         .SPI_SS3      (SPI_SS3    ),
         .SPI_DI       (SPI_DI     ),
-        .R            ({r}    ),
-        .G            ({g}    ),
-        .B            ({b}    ),
-        .HSync        (hs         ),
-        .VSync        (vs         ),
+        .R            (r    ),
+        .G            (g    ),
+        .B            (b    ),
+        .HSync        (~hs        ),
+        .VSync        (~vs        ),
         .VGA_R        (TMP_R      ),
         .VGA_G        (TMP_G      ),
         .VGA_B        (TMP_B      ),
@@ -245,29 +256,10 @@ mist_video #(.COLOR_DEPTH(1)) mist_video(
         .ypbpr        (      )
         );
 
-
-/*osd #(.OSD_X_OFFSET(10), .OSD_Y_OFFSET(10), .OSD_COLOR(4), .OSD_AUTO_CE(1)) osd
-(
-        .clk_sys(clk_sys),
-        //.ce     (ne14M  ),
-        .SPI_SCK(SPI_SCK ),
-        .SPI_DI (SPI_DI  ),
-        .SPI_SS3(SPI_SS3 ),
-        .rotate (2'd0   ),
-        .VSync  (vs     ),
-        .HSync  (hs     ),
-        .R_in   ({r,r,r,r,r,r}),
-        .G_in   ({g,g,g,g,g,g}      ),
-        .B_in   ({b,b,b,b,b,b}      ),
-        .R_out  (TMP_R  ),
-        .G_out  (TMP_G  ),
-        .B_out  (TMP_B  )
-);*/
 assign VGA_R=TMP_R[5:3];
 assign VGA_G=TMP_G[5:3];
 assign VGA_B=TMP_B[5:3];
-/*assign VGA_HS=~(hs ^ vs);
-assign VGA_VS=1'b1;*/
+
 //-------------------------------------------------------------------------------------------------
 wire [15:0] ram_ad;
 wire  [7:0] ram_d;
@@ -275,6 +267,7 @@ wire  [7:0] ram_q;
 wire        ram_cs_oric, ram_oe_oric, ram_we;
 wire        ram_oe = ram_oe_oric;
 wire        ram_cs = ram_cs_oric ;
+wire        tape_out;
 
 oricatmos oricatmos(
         .clk_in           (clk_sys       ),
@@ -293,7 +286,7 @@ oricatmos oricatmos(
         .VIDEO_HSYNC      (hs           ),
         .VIDEO_VSYNC      (vs           ),
         .K7_TAPEIN        (tape         ),
-        .K7_TAPEOUT       (             ),
+        .K7_TAPEOUT       (tape_out     ),
         .K7_REMOTE        (remote       ),
         .ram_ad           (ram_ad       ),
         .ram_d            (ram_d        ),
@@ -312,14 +305,14 @@ oricatmos oricatmos(
         .pll_locked       (pll_locked   ),
         .disk_enable      (disk_enable  ),
         .rom              (1'b1         ),
-        .img_mounted      ( img_mounted[0]), // signaling that new image has been mounted
+        .img_mounted      ( img_mounted ), // signaling that new image has been mounted
         .img_size         ( img_size[19:0]), // size of image in bytes
-        .img_wp           ( status[7]     ), // write protect
+        .img_wp           ( img_wp        ), // write protect
         .sd_lba           ( sd_lba        ),
-        .sd_rd            ( sd_rd[0]      ),
-        .sd_wr            ( sd_wr[0]      ),
+        .sd_rd            ( sd_rd         ),
+        .sd_wr            ( sd_wr         ),
         .sd_ack           ( sd_ack        ),
-        .sd_buff_addr      ( sd_buff_addr  ),
+        .sd_buff_addr      ( sd_buff_addr   ),
         .sd_dout          ( sd_dout       ),
         .sd_din           ( sd_din        ),
         .sd_dout_strobe   ( sd_dout_strobe),
@@ -329,22 +322,33 @@ oricatmos oricatmos(
   ///////////////////   FDC   ///////////////////
 
 
-always @(posedge clk_sys) begin : mounted_blk
+/*always @(posedge clk_sys) begin : mounted_blk
         reg old_mounted;
 
-        old_mounted <= img_mounted[0];
+        old_mounted <= img_mounted;
         if(reset) begin
                 fdd_ready <= 1'b0;
         end
 
-        else if(~old_mounted & img_mounted[0]) begin
+        else if(~old_mounted & img_mounted) begin
                 fdd_ready <= 1'b1;
         end
-end
+end*/
 
+assign fdd_ready = ~fdd_busy;
 
 ///////////////// MISC /////////////////////////
 
+wire dac_out;
+dac #(14) dac_l (
+   .clk_i        (clk_sys),
+   .res_n_i      (1'b1   ),
+   .dac_i        (psg_out),
+   .dac_o        (dac_out)
+);
+assign AUDIO_L = sound_select ? tape_out : dac_out;
+
+assign AUDIO_R=AUDIO_L;
 assign led = fdd_busy;
 assign VGA_NTSC=1'b0;
 assign VGA_PAL=1'b1;

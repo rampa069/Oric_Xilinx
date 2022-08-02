@@ -138,7 +138,7 @@ wire        rom;
 reg         old_rom;
 
 wire        led_value;
-reg         fdd_ready;
+wire        fdd_ready;
 wire        fdd_busy;
 reg         fdd_layout;
 wire        fdd_reset ;
@@ -251,14 +251,14 @@ assign ram_q = sramDQ;
 
 mist_video #(.COLOR_DEPTH(1)) mist_video(
         .clk_sys      (clk_sys     ),
-        .SPI_SCK      (SPI_SCK    ),
-        .SPI_SS3      (SPI_SS3    ),
-        .SPI_DI       (SPI_DI     ),
-        .R            ({r}    ),
-        .G            ({g}    ),
-        .B            ({b}    ),
-        .HSync        (hs         ),
-        .VSync        (vs         ),
+        .SPI_SCK      (SPI_SCK     ),
+        .SPI_SS3      (SPI_SS3     ),
+        .SPI_DI       (SPI_DI      ),
+        .R            (r           ),
+        .G            (g           ),
+        .B            (b           ),
+        .HSync        (~hs         ),
+        .VSync        (~vs         ),
         .VGA_R        (VGA_R      ),
         .VGA_G        (VGA_G      ),
         .VGA_B        (VGA_B      ),
@@ -267,7 +267,7 @@ mist_video #(.COLOR_DEPTH(1)) mist_video(
         .ce_divider   (1'b0       ),
         .scandoubler_disable(scandoublerD       ),
         .scanlines    (scandoublerD ? 2'b00 : status[5:4]),
-        .ypbpr        (ypbpr      )
+        .ypbpr        (           )
         );
 
 
@@ -336,7 +336,7 @@ oricatmos oricatmos(
 
 assign fdd_reset =  status[1];
 
-always @(posedge clk_sys) begin : mounted_blk
+/*always @(posedge clk_sys) begin : mounted_blk
         reg old_mounted;
 
         old_mounted <= img_mounted[0];
@@ -347,7 +347,8 @@ always @(posedge clk_sys) begin : mounted_blk
         else if(~old_mounted & img_mounted[0]) begin
                 fdd_ready <= 1'b1;
         end
-end
+end*/
+assign fdd_ready=~fdd_busy;
 assign  led = fdd_busy;
 
 //-------------------------------------------------------------------------------------------------
