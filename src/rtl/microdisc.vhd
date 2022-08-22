@@ -168,7 +168,7 @@ BEGIN
 		)
 		PORT MAP
 		(
-			clk_sys       => clk_sys, 
+			clk_sys       => CLK_SYS, 
 			ce            => fdc_CLK_en, 
  
 			reset         => NOT nRESET, 

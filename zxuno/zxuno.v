@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-module zxd
+module zxuno
 //-------------------------------------------------------------------------------------------------
 (
 	input  wire       clock50,
@@ -132,7 +132,7 @@ wire        ypbpr;
 wire        scandoublerD;
 wire [63:0] status;
 
-wire [14:0]  psg_out;
+wire [13:0]  psg_out;
 
 wire        remote;
 reg         reset;
@@ -216,9 +216,8 @@ user_io #(.STRLEN (1472>>3),.SD_IMAGES(1)) user_io
 wire keyb_reset;// = (ctrl&alt&del);
 
 always @(posedge clk_sys) begin
-        old_rom <= rom;
         old_disk_enable <= disk_enable;
-        reset <= (!pll_locked | status[0] | old_rom != rom |old_disk_enable != disk_enable);
+        reset <= (!pll_locked | status[0] |old_disk_enable != disk_enable);
 end
 
 /////////////////  Memory  ////////////////////////
@@ -290,18 +289,15 @@ oricatmos oricatmos(
         .K7_REMOTE        (remote       ),
         .ram_ad           (ram_ad       ),
         .ram_d            (ram_d        ),
-        .ram_q            (ram_cs ? ram_q : 8'd0 ),
+        .ram_q            (ram_cs ? ram_q : 8'dZ ),
         .ram_cs           (ram_cs_oric  ),
         .ram_oe           (ram_oe_oric  ),
         .ram_we           (ram_we       ),
-        .joystick_0       (             ),
-        .joystick_1       (             ),
-        .fd_led           (led_value    ),
+       .fd_led           (led_value    ),
         .fdd_ready        (fdd_ready    ),
         .fdd_busy         (fdd_busy     ),
         .fdd_reset        (fdd_reset    ),
         .fdd_layout       (fdd_layout   ),
-        .phi2             (             ),
         .pll_locked       (pll_locked   ),
         .disk_enable      (disk_enable  ),
         .rom              (1'b1         ),
@@ -321,19 +317,6 @@ oricatmos oricatmos(
 );
   ///////////////////   FDC   ///////////////////
 
-
-/*always @(posedge clk_sys) begin : mounted_blk
-        reg old_mounted;
-
-        old_mounted <= img_mounted;
-        if(reset) begin
-                fdd_ready <= 1'b0;
-        end
-
-        else if(~old_mounted & img_mounted) begin
-                fdd_ready <= 1'b1;
-        end
-end*/
 
 assign fdd_ready = ~fdd_busy;
 

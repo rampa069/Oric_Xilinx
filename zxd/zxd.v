@@ -36,12 +36,13 @@ module zxd
 
 //-------------------------------------------------------------------------------------------------
 
-wire clk_sys,pll_locked;
+wire clk_sys,clk_mcu,pll_locked;
 
 clock clock
 ( .CLK_IN1 (clock50),
   .RESET   (1'b0),
   .CLK_OUT1(clk_sys),
+  .CLK_OUT2(clk_mcu),
   .LOCKED  (pll_locked)
 );
 
@@ -64,9 +65,9 @@ wire kbiDQ = ps2kDQ;
 wire kboCk; assign ps2kCk = kboCk ? 1'bZ : kboCk;
 wire kboDQ; assign ps2kDQ = kboDQ ? 1'bZ : kboDQ;
 
-substitute_mcu #(.sysclk_frequency(240)) controller
+substitute_mcu #(.sysclk_frequency(480)) controller
 (
-	.clk          (clk_sys),
+	.clk          (clk_mcu),
 	.reset_in     (1'b1   ),
 	.reset_out    (       ),
 	.spi_cs       (sdcCs  ),
@@ -280,7 +281,6 @@ wire        ram_oe = ram_oe_oric;
 wire        ram_cs = ram_cs_oric ;
 reg         sdram_we;
 reg  [15:0] sdram_ad;
-wire        phi2;
 
 oricatmos oricatmos(
         .clk_in           (clk_sys       ),
@@ -307,14 +307,11 @@ oricatmos oricatmos(
         .ram_cs           (ram_cs_oric  ),
         .ram_oe           (ram_oe_oric  ),
         .ram_we           (ram_we       ),
-        .joystick_0       (joystick_0   ),
-        .joystick_1       (joystick_1   ),
         .fd_led           (led_value    ),
         .fdd_ready        (fdd_ready    ),
         .fdd_busy         (fdd_busy     ),
         .fdd_reset        (fdd_reset    ),
         .fdd_layout       (fdd_layout   ),
-        .phi2             (phi2         ),
         .pll_locked       (pll_locked   ),
         .disk_enable      (disk_enable  ),
         .rom              (rom          ),
@@ -336,18 +333,7 @@ oricatmos oricatmos(
 
 assign fdd_reset =  status[1];
 
-/*always @(posedge clk_sys) begin : mounted_blk
-        reg old_mounted;
 
-        old_mounted <= img_mounted[0];
-        if(reset) begin
-                fdd_ready <= 1'b0;
-        end
-
-        else if(~old_mounted & img_mounted[0]) begin
-                fdd_ready <= 1'b1;
-        end
-end*/
 assign fdd_ready=~fdd_busy;
 assign  led = fdd_busy;
 

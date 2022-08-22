@@ -732,19 +732,19 @@ end
 reg [19:0] scan_addr;
 reg        scan_wr;
 
-reg  [1:0] edsk_sizecode = 0;      // sector size: 0=128K, 1=256K, 2=512K, 3=1024K
+reg  [1:0] edsk_sizecode = 2'b0;      // sector size: 0=128K, 1=256K, 2=512K, 3=1024K
 reg        edsk_side = 0;          // Side number (0 or 1)
-reg  [6:0] edsk_track = 0;         // Track number
-reg  [7:0] edsk_sector = 0;        // Sector number 0..15
-reg [19:0] edsk_offset = 0;
-reg  [7:0] edsk_trackf = 0, edsk_sidef = 0;
+reg  [6:0] edsk_track = 7'b0;         // Track number
+reg  [7:0] edsk_sector = 8'b0;        // Sector number 0..15
+reg [19:0] edsk_offset = 20'b0;
+reg  [7:0] edsk_trackf = 8'b0, edsk_sidef = 8'b0;
 
 reg [10:0] edsk_addr, edsk_start;
 
-reg [10:0] edsk_size = 0;
+reg [10:0] edsk_size = 11'b0;
 wire[10:0] edsk_next = ((edsk_addr + 1'd1) >= edsk_size) ? 11'd0 : edsk_addr + 1'd1;
 
-reg  [7:0] spt_size = 0;
+reg  [7:0] spt_size = 8'b0;
 reg  [7:0] spt_addr;
 
 
@@ -752,7 +752,6 @@ wire [7:0] scan_data =  buff_dout;
 reg [53:0] edsk[0:1991];  //[53:0][0:1991]
 reg  [7:0] spt[0:165]; // 7:0 [0:165]
 
-//reg  [7:0] spt_addr;
 always @(posedge clk_sys) begin
 	{edsk_track,edsk_side,edsk_trackf,edsk_sidef,edsk_sector,edsk_sizecode,edsk_offset} <= edsk[edsk_addr];
 	edsk_spt <= spt[spt_addr];

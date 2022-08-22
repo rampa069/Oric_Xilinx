@@ -1,8 +1,0 @@
-INTSTYLE=ise
-INFILE=/home/rampa/Devel/Oric/zxd/tmp/zxd.ncd
-OUTFILE=/home/rampa/Devel/Oric/zxd/tmp/zxd.bit
-FAMILY=Spartan6
-PART=xc6slx25-2ftg256
-WORKINGDIR=/home/rampa/Devel/Oric/zxd/tmp
-LICENSE=WebPack
-USER_INFO=211876260_0_0_911

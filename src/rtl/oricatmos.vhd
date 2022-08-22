@@ -53,9 +53,9 @@ entity oricatmos is
     K7_TAPEIN         : in    std_logic;
     K7_TAPEOUT        : out   std_logic;
     K7_REMOTE         : out   std_logic;
-    PSG_OUT_A         : OUT   unsigned(11 downto 0);
-    PSG_OUT_B         : OUT   unsigned(11 downto 0);
-    PSG_OUT_C         : OUT   unsigned(11 downto 0);
+    PSG_OUT_A         : buffer unsigned(11 downto 0);
+    PSG_OUT_B         : buffer unsigned(11 downto 0);
+    PSG_OUT_C         : buffer unsigned(11 downto 0);
     PSG_OUT           : OUT   unsigned(13 downto 0);
     VIDEO_R           : out   std_logic;
     VIDEO_G           : out   std_logic;
@@ -63,21 +63,17 @@ entity oricatmos is
     VIDEO_HSYNC       : out   std_logic;
     VIDEO_VSYNC       : out   std_logic;
     VIDEO_SYNC        : out   std_logic;
-	 BLANKINGn         : out   std_logic;
 	 ram_ad            : out std_logic_vector(15 downto 0);
 	 ram_d             : out std_logic_vector( 7 downto 0);
 	 ram_q             : in  std_logic_vector( 7 downto 0);
 	 ram_cs            : out std_logic;
 	 ram_oe            : out std_logic;
 	 ram_we            : out std_logic;
-	 phi2              : out std_logic;
 	 fd_led            : out std_logic;
 	 fdd_ready         : in std_logic;
 	 fdd_busy          : out std_logic;
 	 fdd_reset         : in std_logic;
 	 fdd_layout        : in std_logic;
-	 joystick_0        : in std_logic_vector( 7 downto 0);
-	 joystick_1        : in std_logic_vector( 7 downto 0);
 	 pll_locked        : in std_logic;
 	 disk_enable       : in std_logic;
 	 rom               : in std_logic;
@@ -109,9 +105,9 @@ architecture RTL of oricatmos is
     signal cpu_di             : std_logic_vector(7 downto 0);
     signal cpu_do             : std_logic_vector(7 downto 0);
     signal cpu_rw             : std_logic;
-    signal cpu_irq            : std_logic;
-      
+     
 	 -- VIA
+    signal VIA_IRQ            : std_logic;
     signal via_pa_out_oe_l    : std_logic_vector( 7 downto 0);
     signal via_pa_in          : std_logic_vector( 7 downto 0);
     signal via_pa_out         : std_logic_vector( 7 downto 0);
@@ -133,7 +129,6 @@ architecture RTL of oricatmos is
 
 
     -- PSG
-    signal ym_ioa_out          : std_logic_vector (7 downto 0);
     signal psg_do             : std_logic_vector (7 downto 0);
 
     -- ULA    
@@ -147,7 +142,9 @@ architecture RTL of oricatmos is
     signal ula_WE_SRAM        : std_logic;
 	 signal ula_LATCH_SRAM     : std_logic;
     signal ula_CLK_4          : std_logic;
-    signal ula_CLK_4_en       : std_logic;
+	 signal ula_CLK_4_EN       : std_logic;
+	 signal ula_CLK_1_EN       : std_logic;
+	 
     signal ula_MUX            : std_logic;
     signal ula_RW_RAM         : std_logic;
 	 signal ula_VIDEO_R        : std_logic;
@@ -156,7 +153,7 @@ architecture RTL of oricatmos is
 	 
 
 --	 signal lSRAM_D            : std_logic_vector(7 downto 0);
-	 signal ENA_1MHZ           : std_logic;
+--	 signal ENA_1MHZ           : std_logic;
     signal ROM_ATMOS_DO     	: std_logic_vector(7 downto 0);
 	 signal ROM_1_DO     	   : std_logic_vector(7 downto 0);
 	 signal ROM_MD_DO          : std_logic_vector(7 downto 0);
@@ -185,13 +182,6 @@ architecture RTL of oricatmos is
 	 
 	
 	 
-	 -- Controller derived clocks
-	 signal PH2_1              : std_logic;                                
-    signal PH2_2              : std_logic;                                
-    signal PH2_3              : std_logic;                                
-    signal PH2_old            : std_logic_vector(3 downto 0);   
-    signal PH2_cntr           : std_logic_vector(4 downto 0);
-	 
 COMPONENT keyboard
 	PORT
 	(
@@ -207,25 +197,26 @@ COMPONENT keyboard
 		swrst        : OUT STD_LOGIC
 	);
 END COMPONENT;
-COMPONENT jt49_bus
+COMPONENT psg
 			 PORT (
-						clk : IN STD_LOGIC;
-						clk_en : IN STD_LOGIC;
-						rst_n : IN STD_LOGIC;
+						clock : IN STD_LOGIC;
+						ce    : IN STD_LOGIC;
+						reset : IN STD_LOGIC;
 						bdir : IN STD_LOGIC;
 						bc1 : IN STD_LOGIC;
 						sel : IN STD_LOGIC;
-						din : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-						dout : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-						sound : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
-						A : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-						B : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-						C : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-						sample : OUT STD_LOGIC;
-						IOA_In : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-						IOA_Out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-						IOB_In : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-						IOB_Out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+						d   : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+						q   : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+						
+						ioad : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+					   ioaq : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+						iobd : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+						iobq : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+						
+						MIX : OUT UNSIGNED (13 DOWNTO 0);
+						A   : OUT UNSIGNED (11 DOWNTO 0);
+						B   : OUT UNSIGNED(11 DOWNTO 0);
+						C   : OUT UNSIGNED(11 DOWNTO 0)
 			 );
 END COMPONENT;
 
@@ -236,11 +227,11 @@ inst_cpu : entity work.T65
 	port map (
 		Mode    		=> "00",
       Res_n   		=> RESETn,
-      Enable  		=> ENA_1MHZ,
+      Enable  		=> ULA_CLK_1_EN,
       Clk     		=> CLK_IN,
       Rdy     		=> '1',
       Abort_n 		=> '1',
-      IRQ_n   		=> cpu_irq and cont_irq, -- Via and disk controller
+      IRQ_n   		=> VIA_IRQ and cont_irq, -- Via and disk controller
       NMI_n   		=> KEYB_NMIn,
       SO_n    		=> '1',
       R_W_n   		=> cpu_rw,
@@ -250,16 +241,15 @@ inst_cpu : entity work.T65
 );
 
 
---ram_ad  <= ula_AD_SRAM when (ula_PHI2 = '0')else cpu_ad(15 downto 0);
 ram_ad  <= ula_AD_SRAM when (ula_PHI2 = '0')else cpu_ad(15 downto 0);
 
 
 ram_d   <= cpu_do;
 SRAM_DO <= ram_q;
+
 ram_cs  <= '0' when RESETn = '0' else ula_CE_SRAM;
 ram_oe  <= '0' when RESETn = '0' else ula_OE_SRAM;
 ram_we  <= '0' when RESETn = '0' else ula_WE_SRAM;
-phi2    <= ula_PHI2;
 
 
 
@@ -270,12 +260,12 @@ inst_rom0 : entity work.BASIC11A  -- Oric Atmos ROM
 		data 			=> ROM_ATMOS_DO
 );
 
---inst_rom1 : entity work.BASIC10  -- Oric 1 ROM
---	port map (
---		clk  			=> CLK_IN,
---		addr 			=> cpu_ad(13 downto 0),
---		data 			=> ROM_1_DO
---);
+inst_rom1 : entity work.BASIC10  -- Oric 1 ROM
+	port map (
+		clk  			=> CLK_IN,
+		addr 			=> cpu_ad(13 downto 0),
+		data 			=> ROM_1_DO
+);
 
 inst_rom2 : entity work.ORICDOS06  -- Microdisc ROM
 	port map (
@@ -289,7 +279,7 @@ inst_ula : entity work.ULA
    port map (
       CLK        	=> CLK_IN,
       PHI2       	=> ula_phi2,
-		PHI2_EN     => ENA_1MHZ,
+		PHI2_EN     => ula_CLK_1_en,
       CLK_4      	=> ula_CLK_4,
 		CLK_4_EN    => ula_CLK_4_en,
       RW         	=> cpu_rw,
@@ -309,7 +299,6 @@ inst_ula : entity work.ULA
       G          	=> VIDEO_G,
       B          	=> VIDEO_B,
       SYNC       	=> VIDEO_SYNC,
-		BLANKINGn   => BLANKINGn,
 		HSYNC      	=> VIDEO_HSYNC,
 		VSYNC      	=> VIDEO_VSYNC		
 );
@@ -323,7 +312,7 @@ inst_via : entity work.M6522
 		I_CS1       => cont_IOCONTROLn,
 		I_CS2_L     => ula_CSIOn,
 		
-		O_IRQ_L     => cpu_irq, 
+		O_IRQ_L     => VIA_IRQ, 
 
       --PORT A		
 		I_CA1       => '1',       -- PRT_ACK
@@ -348,46 +337,33 @@ inst_via : entity work.M6522
 		O_PB        => via_pb_out,
 		RESET_L     => RESETn, 
 		I_P2_H      => ula_phi2,
-		ENA_4       => ula_CLK_4_en,
-		CLK         => CLK_IN
+		ENA_4       => ula_clk_4_EN,
+		CLK         => clk_in
 );
 
---inst_psg : jt49_bus
---  PORT MAP(
---		 clk => CLK_IN,
---		 clk_en => ENA_1MHZ,
---		 sel => '1',
---		 rst_n => RESETn AND KEYB_RESETn,
---		 bc1 => via_ca2_out,
---		 bdir => via_cb2_out,
---		 din => via_pa_out,
---		 dout => psg_do,
---		 sample => open,
---		 sound => PSG_OUT,
---		 A => PSG_OUT_A,
---		 B => PSG_OUT_B,
---		 C => PSG_OUT_C,
---		 IOA_In => (OTHERS => '0'),
---		 IOA_Out => ym_ioa_out,
---		 IOB_In => (OTHERS => '0')
--- );
 
-  psg_a: entity work.ym2149_audio
+
+  psg_a: entity work.psg
   port map (
-    clk_i       => CLK_IN,
-    en_clk_psg_i=> ENA_1MHZ,
-    reset_n_i   => RESETn AND KEYB_RESETn,
-    bdir_i      => via_cb2_out,
-    bc_i        => via_ca2_out,
-    data_i      => via_pa_out,
-    data_r_o    => psg_do,
-    ch_a_o      => PSG_OUT_A,
-    ch_b_o      => PSG_OUT_B,
-    ch_c_o      => PSG_OUT_C,
-    mix_audio_o => PSG_OUT,
-    sel_n_i     => '1'
+    clock       => CLK_IN,
+    ce          => ULA_CLK_1_EN,
+    reset       => RESETn AND KEYB_RESETn,
+    bdir        => via_cb2_out,
+    bc1         => via_ca2_out,
+    d           => via_pa_out,
+    q           => psg_do,
+    a           => PSG_OUT_A,
+    b           => PSG_OUT_B,
+    c           => PSG_OUT_C,
+	 mix         => PSG_OUT,
+	 
+	 ioad        => "ZZZZZZZZ",
+	 ioaq        => open,
+	 iobd        => "ZZZZZZZZ",
+	 iobq        => open,
+	 
+    sel         => '1'
     );
-
 
 inst_key : keyboard
 	port map(
@@ -397,7 +373,7 @@ inst_key : keyboard
 		key_strobe   => key_strobe,
 		key_code     => key_code,
 		row          => via_pb_out (2 downto 0),
-		col          => via_pa_out, --ym_ioa_out,
+		col          => via_pa_out, 
 		key_hit      => KEY_HIT,
 		swnmi        => swnmi,
 		swrst        => swrst
@@ -422,8 +398,6 @@ inst_microdisc: entity work.Microdisc
           IOCTRL    => cont_IOCONTROLn,                     -- Oric I/O Control           
                                                             -- Additional MCU Interface Lines
           nRESET    => RESETn,                              -- RESET from MCU
-          --DSEL      => cont_DSEL,                           -- Drive Select
-          --SSEL      => cont_SSEL,                           -- Side Select
           
                                                              -- EEPROM Control Lines.
           nECE      => cont_ECE,                             -- Chip Enable
@@ -463,21 +437,15 @@ via_pb_in(6) <=via_pb_out(6);
 via_pb_in(7) <=via_pb_out(7);
 
 
-
 K7_TAPEOUT  <= via_pb_out(7);
 K7_REMOTE   <= via_pb_out(6);
 PRN_STROBE  <= via_pb_out(4);
 PRN_DATA    <= via_pa_out;
 
 
---joya <= joystick_0(6 downto 4) & joystick_0(0) & joystick_0(1) & joystick_0(2) & joystick_0(3);
---joyb <= joystick_1(6 downto 4) & joystick_1(0) & joystick_1(1) & joystick_1(2) & joystick_1(3);
-
 
 process begin
 	wait until rising_edge(clk_in);
-  
-	 
 	 
 		-- expansion port
       if    cpu_rw = '1' and ula_PHI2 = '1' and ula_CSIOn = '0' and cont_IOCONTROLn = '0' then
