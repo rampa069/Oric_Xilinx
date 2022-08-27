@@ -77,10 +77,10 @@ module user_io (
 	output reg          ps2_kbd_data,
 	input               ps2_kbd_clk_i,
 	input               ps2_kbd_data_i,
-	output              ps2_mouse_clk,
-	output reg          ps2_mouse_data,
-	input               ps2_mouse_clk_i,
-	input               ps2_mouse_data_i,
+//	output              ps2_mouse_clk,
+//	output reg          ps2_mouse_data,
+//	input               ps2_mouse_clk_i,
+//	input               ps2_mouse_data_i,
 
 	// keyboard data
 	output reg          key_pressed,  // 1-make (pressed), 0-break (released)
@@ -102,7 +102,7 @@ module user_io (
 );
 
 parameter STRLEN=0; // config string length
-parameter PS2DIV=1000; // master clock divider for psk2_kbd/mouse clk
+parameter PS2DIV= 1000; // master clock divider for psk2_kbd/mouse clk
 parameter ROM_DIRECT_UPLOAD=0; // direct upload used for file uploads from the ARM
 parameter SD_IMAGES=2; // number of block-access images (max. 4 supported in current firmware)
 parameter PS2BIDIR=0; // bi-directional PS2 interface
@@ -272,7 +272,7 @@ always@(posedge clk_sys) begin : ps2_kbd
 	end
 end
 
-// mouse
+/*// mouse
 reg [7:0] ps2_mouse_fifo [(2**PS2_FIFO_BITS)-1:0];
 reg [PS2_FIFO_BITS-1:0] ps2_mouse_wptr;
 reg [PS2_FIFO_BITS-1:0] ps2_mouse_rptr;
@@ -390,7 +390,7 @@ always@(posedge clk_sys) begin : ps2_mouse
 			end
 		end
 	end
-end
+end*/
 
 // fifo to receive serial data from core to be forwarded to io controller
 
@@ -474,12 +474,12 @@ always@(posedge spi_sck or posedge SPI_SS_IO) begin : spi_transmitter
 					spi_byte_out <= (ps2_kbd_rx_strobe ^ ps2_kbd_rx_strobeD) ? 8'h0e : 8'h00;
 				end else spi_byte_out <= ps2_kbd_rx_byte;
 
-			// PS2 mouse command
-			8'h0f: if (byte_cnt == 0) begin
-					ps2_mouse_rx_strobeD <= ps2_mouse_rx_strobe;
-					//echo the command code if there's a byte to send, indicating the core supports the command
-					spi_byte_out <= (ps2_mouse_rx_strobe ^ ps2_mouse_rx_strobeD) ? 8'h0f : 8'h00;
-				end else spi_byte_out <= ps2_mouse_rx_byte;
+//			// PS2 mouse command
+//			8'h0f: if (byte_cnt == 0) begin
+//					ps2_mouse_rx_strobeD <= ps2_mouse_rx_strobe;
+//					//echo the command code if there's a byte to send, indicating the core supports the command
+//					spi_byte_out <= (ps2_mouse_rx_strobe ^ ps2_mouse_rx_strobeD) ? 8'h0f : 8'h00;
+//				end else spi_byte_out <= ps2_mouse_rx_byte;
 
 			// reading config string
 			8'h14: if (STRLEN == 0) spi_byte_out <= conf_chr; else
@@ -547,11 +547,11 @@ always @(posedge clk_sys) begin : cmd_block
 	reg [7:0] acmd;
 	reg [7:0] abyte_cnt;   // counts bytes
 
-	reg [7:0] mouse_flags_r;
+/*	reg [7:0] mouse_flags_r;
 	reg [7:0] mouse_x_r;
 	reg [7:0] mouse_y_r;
 	reg       mouse_fifo_ok;
-
+*/
 	reg       key_pressed_r;
 	reg       key_extended_r;
 
@@ -566,7 +566,7 @@ always @(posedge clk_sys) begin : cmd_block
 
 	if (spi_transfer_end) begin
 		abyte_cnt <= 8'd0;
-		mouse_fifo_ok <= 0;
+		//mouse_fifo_ok <= 0;
 	end else if (spi_receiver_strobeD ^ spi_receiver_strobe) begin
 
 		if(~&abyte_cnt) 
@@ -576,7 +576,8 @@ always @(posedge clk_sys) begin : cmd_block
 			acmd <= spi_byte_in;
 			if (spi_byte_in == 8'h70 || spi_byte_in == 8'h71)
 				// accept the incoming mouse data only if there's place for the full packet
-				mouse_fifo_ok <= ps2_mouse_free > 3;
+				//mouse_fifo_ok <= ps2_mouse_free > 3;
+				;
 		end else begin
 			case(acmd)
 				// buttons and switches
@@ -586,26 +587,26 @@ always @(posedge clk_sys) begin : cmd_block
 				8'h62: if (abyte_cnt < 5) joystick_2[(abyte_cnt-1)<<3 +:8] <= spi_byte_in;
 				8'h63: if (abyte_cnt < 5) joystick_3[(abyte_cnt-1)<<3 +:8] <= spi_byte_in;
 				8'h64: if (abyte_cnt < 5) joystick_4[(abyte_cnt-1)<<3 +:8] <= spi_byte_in;
-				8'h70,8'h71: begin
-					// store incoming ps2 mouse bytes
-					if (abyte_cnt < 4 && mouse_fifo_ok) begin
-						ps2_mouse_fifo[ps2_mouse_wptr] <= spi_byte_in;
-						ps2_mouse_wptr <= ps2_mouse_wptr + 1'd1;
-					end
-
-					if (abyte_cnt == 1) mouse_flags_r <= spi_byte_in;
-					else if (abyte_cnt == 2) mouse_x_r <= spi_byte_in;
-					else if (abyte_cnt == 3) mouse_y_r <= spi_byte_in;
-					else if (abyte_cnt == 4) begin
-						// flags: YOvfl, XOvfl, dy8, dx8, 1, mbtn, rbtn, lbtn
-						mouse_flags <= mouse_flags_r;
-						mouse_x <= { mouse_flags_r[4], mouse_x_r };
-						mouse_y <= { mouse_flags_r[5], mouse_y_r };
-						mouse_z <= spi_byte_in[3:0];
-						mouse_idx <= acmd[0];
-						mouse_strobe <= 1;
-					end
-				end
+//				8'h70,8'h71: begin
+//					// store incoming ps2 mouse bytes
+//					if (abyte_cnt < 4 && mouse_fifo_ok) begin
+//						ps2_mouse_fifo[ps2_mouse_wptr] <= spi_byte_in;
+//						ps2_mouse_wptr <= ps2_mouse_wptr + 1'd1;
+//					end
+//
+//					if (abyte_cnt == 1) mouse_flags_r <= spi_byte_in;
+//					else if (abyte_cnt == 2) mouse_x_r <= spi_byte_in;
+//					else if (abyte_cnt == 3) mouse_y_r <= spi_byte_in;
+//					else if (abyte_cnt == 4) begin
+//						// flags: YOvfl, XOvfl, dy8, dx8, 1, mbtn, rbtn, lbtn
+//						mouse_flags <= mouse_flags_r;
+//						mouse_x <= { mouse_flags_r[4], mouse_x_r };
+//						mouse_y <= { mouse_flags_r[5], mouse_y_r };
+//						mouse_z <= spi_byte_in[3:0];
+//						mouse_idx <= acmd[0];
+//						mouse_strobe <= 1;
+//					end
+//				end
 				8'h05: begin
 					// store incoming ps2 keyboard bytes 
 					ps2_kbd_fifo[ps2_kbd_wptr] <= spi_byte_in;

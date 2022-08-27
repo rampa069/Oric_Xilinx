@@ -112,9 +112,10 @@ localparam CONF_STR = {
         "O7,Drive Write,Allow,Prohibit;",
         "O45,Scandoubler Fx,None,CRT 25%,CRT 50%,CRT 75%;",
 //        "O89,Stereo,Off,ABC (West Europe),ACB (East Europe);",
-        "T0,Reset;",
-        "V,v2.2-EDSK."
+        "T0,Reset ORIC;",
+        "T1,Reset FPGA"
 };
+
 wire        key_pressed;
 wire [7:0]  key_code;
 wire        key_strobe;
@@ -174,7 +175,7 @@ always @(posedge clk_sys) begin
 end
 
 
-user_io #(.STRLEN (1416>>3)) user_io
+user_io #(.STRLEN (1464>>3)) user_io
 (
         .clk_sys                (clk_sys                ),
         .clk_sd                 (clk_sys                ),
@@ -216,7 +217,7 @@ user_io #(.STRLEN (1416>>3)) user_io
 wire keyb_reset;// = (ctrl&alt&del);
 
 
-wire hard_reset; // = status[1] |(ctrl&alt&bs);
+wire hard_reset = status[1]; // |(ctrl&alt&bs);
 
 multiboot #(.ADDR(24'hB0000)) Multiboot
 (

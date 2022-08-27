@@ -12,17 +12,18 @@ module psg
 	input  wire[ 7:0] d,
 	output reg [ 7:0] q,
 
-	output wire[11:0] a,
-	output wire[11:0] b,
-	output wire[11:0] c,
+	output reg[11:0] a,
+	output reg[11:0] b,
+	output reg[11:0] c,
 	output wire[13:0] mix,
 
 	input  wire[ 7:0] ioad,
-	output wire[ 7:0] ioaq,
+	output reg[ 7:0] ioaq,
 
 	input  wire[ 7:0] iobd,
-	output wire[ 7:0] iobq
+	output reg[ 7:0] iobq
 );
+
 //-------------------------------------------------------------------------------------------------
 
 localparam ADDRMASK = 4'b0000;
@@ -86,16 +87,16 @@ always @(posedge clock, negedge reset)
 	if(!reset) begin
 		a_data <= 1'd0;
 		b_data <= 1'd0;
-		a_period <= 1'd0;
-		b_period <= 1'd0;
-		c_period <= 1'd0;
-		e_period <= 1'd0;
-		n_period <= 1'd0;
-		{ a_mode, a_level } <= 1'd0;
-		{ b_mode, b_level } <= 1'd0;
-		{ c_mode, c_level } <= 1'd0;
-		{ e_continue, e_attack, e_alternate, e_hold } <= 1'd0;
-		{ b_data_io, a_data_io, c_mix_noise, b_mix_noise, a_mix_noise, c_enable, b_enable, a_enable } <= 1'd0;
+		a_period <= 12'd0;
+		b_period <= 12'd0;
+		c_period <= 12'd0;
+		e_period <= 16'd0;
+		n_period <= 5'd0;
+		{ a_mode, a_level } <= 5'd0;
+		{ b_mode, b_level } <= 5'd0;
+		{ c_mode, c_level } <= 5'd0;
+		{ e_continue, e_attack, e_alternate, e_hold } <= 4'd0;
+		{ b_data_io, a_data_io, c_mix_noise, b_mix_noise, a_mix_noise, c_enable, b_enable, a_enable } <= 8'd0;
 	end
 	else if(ce) if(bdir && !bc1)
 		case(addr)
@@ -132,7 +133,7 @@ always @(*)
 		10: q = { 3'd0, c_mode, c_level };
 		11: q = e_period[ 7:0];
 		12: q = e_period[15:8];
-		13: q = { e_continue, e_attack, e_alternate, e_hold };
+		13: q = 8'b0; //{4'd0, e_continue, e_attack, e_alternate, e_hold };
 		14: q = a_data_io ? a_data : ioad;
 		15: q = b_data_io ? b_data : iobd;
 	endcase
@@ -260,21 +261,21 @@ always @(posedge clock, negedge reset)
 
 reg[11:0] dac[0:15]; // -3 dB steps, value = 4095*10^(-3*(15-N)/20)
 initial begin
-//	dac[ 0] = 12'h017;
 	dac[ 0] = 12'h000; dac[ 1] = 12'h021; dac[ 2] = 12'h02E; dac[ 3] = 12'h041;
 	dac[ 4] = 12'h05C; dac[ 5] = 12'h081; dac[ 6] = 12'h0B7; dac[ 7] = 12'h102;
 	dac[ 8] = 12'h16D; dac[ 9] = 12'h204; dac[10] = 12'h2D8; dac[11] = 12'h405;
 	dac[12] = 12'h5AD; dac[13] = 12'h804; dac[14] = 12'hB53; dac[15] = 12'hFFF;
 end
-
 //-------------------------------------------------------------------------------------------------
 
-assign a = (a_enable | a_ff) & (a_mix_noise | n_bit) ? dac[a_mode ? e_level : a_level] : 1'd0;
-assign b = (b_enable | b_ff) & (b_mix_noise | n_bit) ? dac[b_mode ? e_level : b_level] : 1'd0;
-assign c = (c_enable | c_ff) & (c_mix_noise | n_bit) ? dac[c_mode ? e_level : c_level] : 1'd0;
+always @(posedge clock) if (ce) if ( stb ) begin
+   a <= (a_enable | a_ff) & (a_mix_noise | n_bit) ?  a_mode ? dac[e_level] : dac[a_level] : 1'd0;
+   b <= (b_enable | b_ff) & (b_mix_noise | n_bit) ?  b_mode ? dac[e_level] : dac[b_level] : 1'd0;
+   c <= (c_enable | c_ff) & (c_mix_noise | n_bit) ?  c_mode ? dac[e_level] : dac[c_level] : 1'd0;
 
-assign ioaq = a_data;
-assign iobq = b_data;
+  ioaq <= a_data;
+  iobq <= b_data;
+end
 
 assign mix = { 2'd0, a }+{ 2'd0, b }+{ 2'd0, c };
 
